@@ -1,0 +1,24 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+xmltodict = "*"
+requests = "*"
+six = "*"
+xmlschema = "*"
+glom = "*"
+
+[dev-packages]
+mock = "*"
+funcsigs = {version = "*", markers="python_version < '3.6'"}
+tox = "*"
+coverage = "*"
+pytest = "*"
+pytest-runner = "*"
+pytest-xdist = "*"
+pytest-cov = "*"
+
+[requires]
+python_version = "3.6"
