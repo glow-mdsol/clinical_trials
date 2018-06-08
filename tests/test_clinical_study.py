@@ -31,34 +31,36 @@ class SchemaTestCase(unittest.TestCase):
         _schema = open(SCHEMA_LOCATION)
         self.schema = XMLSchema(_schema)
 
+    def get_study(self, nct_id):
+        with mock.patch('clinical_trials.clinical_study.get_schema') as donk:
+            donk.return_value = self.schema
+            with mock.patch("clinical_trials.clinical_study.get_study") as dink:
+                dink.return_value = self.cache.get(nct_id)
+                study = ClinicalStudy.from_nctid(nct_id)
+        return study
+
 
 class TestSponsor(SchemaTestCase):
 
     def test_sponsor(self):
-        with mock.patch('clinical_trials.clinical_study.get_schema') as donk:
-            donk.return_value = self.schema
-            with mock.patch("clinical_trials.clinical_study.get_study") as dink:
-                dink.return_value = self.cache.get('NCT01565668')
-                study = ClinicalStudy.from_nctid('NCT01565668')
+        study = self.get_study('NCT01565668')
         sponsor = study.sponsor
         self.assertEqual('Daiichi Sankyo, Inc.', sponsor.get('agency'))
 
     def test_collaborator(self):
-        with mock.patch('clinical_trials.clinical_study.get_schema') as donk:
-            donk.return_value = self.schema
-            with mock.patch("clinical_trials.clinical_study.get_study") as dink:
-                dink.return_value = self.cache.get('NCT01565668')
-                study = ClinicalStudy.from_nctid('NCT01565668')
+        """
+        get Study collaborators
+        """
+        study = self.get_study('NCT01565668')
         collabs = study.collaborators
         self.assertEqual(1, len(collabs))
         self.assertEqual('Ambit Biosciences Corporation', collabs[0].get('agency'))
 
     def test_no_collaborator(self):
-        with mock.patch('clinical_trials.clinical_study.get_schema') as donk:
-            donk.return_value = self.schema
-            with mock.patch("clinical_trials.clinical_study.get_study") as dink:
-                dink.return_value = self.cache.get('NCT02348489')
-            study = ClinicalStudy.from_nctid('NCT02348489')
+        """
+        Study with no collaborators is ok
+        """
+        study = self.get_study('NCT02348489')
         collabs = study.collaborators
         self.assertEqual(0, len(collabs))
         self.assertEqual([], collabs)
@@ -67,150 +69,147 @@ class TestSponsor(SchemaTestCase):
 class TestInfo(SchemaTestCase):
 
     def test_study_id(self):
-        with mock.patch('clinical_trials.clinical_study.get_schema') as donk:
-            donk.return_value = self.schema
-            with mock.patch("clinical_trials.clinical_study.get_study") as dink:
-                dink.return_value = self.cache.get('NCT01565668')
-                study = ClinicalStudy.from_nctid('NCT01565668')
+        study = self.get_study('NCT01565668')
         self.assertEqual('2689-CL-2004', study.study_id)
 
     def test_secondary_id(self):
-        with mock.patch("clinical_trials.clinical_study.get_study") as dink:
-            with mock.patch('clinical_trials.clinical_study.get_schema') as donk:
-                donk.return_value = self.schema
-                dink.return_value = self.cache.get('NCT01565668')
-                study = ClinicalStudy.from_nctid('NCT01565668')
+        study = self.get_study('NCT01565668')
         self.assertEqual(['2011-005408-13'], study.secondary_id)
 
     def test_nct_id(self):
-        with mock.patch('clinical_trials.clinical_study.get_schema') as donk:
-            donk.return_value = self.schema
-            with mock.patch("clinical_trials.clinical_study.get_study") as dink:
-                dink.return_value = self.cache.get('NCT01565668')
-                study = ClinicalStudy.from_nctid('NCT01565668')
+        study = self.get_study('NCT01565668')
         self.assertEqual('NCT01565668', study.nct_id)
 
 
 class TestGetPeople(SchemaTestCase):
 
     def test_get_people(self):
-        with mock.patch('clinical_trials.clinical_study.get_schema') as donk:
-            donk.return_value = self.schema
-            with mock.patch("clinical_trials.clinical_study.get_study") as dink:
-                dink.return_value = self.cache.get('NCT01565668')
-                study = ClinicalStudy.from_nctid('NCT01565668')
-            self.assertEqual(1, len(study.study_people))
+        study = self.get_study('NCT01565668')
+        self.assertEqual(1, len(study.study_people))
 
 
 class TestGetMeSHTerms(SchemaTestCase):
 
-    def test_get_people(self):
-        with mock.patch('clinical_trials.clinical_study.get_schema') as donk:
-            donk.return_value = self.schema
-            with mock.patch("clinical_trials.clinical_study.get_study") as dink:
-                dink.return_value = self.cache.get('NCT01565668')
-                study = ClinicalStudy.from_nctid('NCT01565668')
-                mesh_terms = study.mesh_terms()
-            self.assertEqual(3, len(mesh_terms))
+    def test_get_mesh_terms_668(self):
+        """
+        Get the MeSH terms for a study with conditions only
+        """
+        study = self.get_study('NCT01565668')
+        mesh_terms = study.mesh_terms
+        self.assertEqual(3, len(mesh_terms.get('condition')))
+        self.assertIsNone(mesh_terms.get('intervention'))
+
+    def test_study_mesh_terms_489(self):
+        """
+        With both interventions and conditions
+        """
+        study_id = 'NCT02348489'
+        study = self.get_study(study_id)
+        mesh_terms = study.mesh_terms
+        self.assertEqual(3, len(mesh_terms.get('condition')))
+        self.assertEqual(1, len(mesh_terms.get('intervention')))
 
 
 class TestLocations(SchemaTestCase):
 
     def test_location_load(self):
-        with mock.patch('clinical_trials.clinical_study.get_schema') as donk:
-            donk.return_value = self.schema
-            with mock.patch("clinical_trials.clinical_study.get_study") as dink:
-                dink.return_value = self.cache.get('NCT01565668')
-                study = ClinicalStudy.from_nctid('NCT01565668')
-                locations = study.locations
-            self.assertEqual(24, len(locations))
+        study = self.get_study('NCT01565668')
+        locations = study.locations
+        self.assertEqual(24, len(locations))
+
+
+class TestFacilities(SchemaTestCase):
+
+    def test_facilities_load(self):
+        study = self.get_study('NCT01565668')
+        facilities = study.facilities
+        self.assertEqual(24, len(facilities))
+
+    def test_facilities_address(self):
+        study = self.get_study('NCT01565668')
+        facilities = study.facilities
+        for facility in facilities:
+            if facility.name == "UCLA School of Medicine":
+                address = facility.address
+                self.assertEqual("Los Angeles", address.city)
+                self.assertEqual("California", address.state)
+                self.assertEqual("90095", address.zip)
+                self.assertEqual("United States", address.country)
+
+
+class TestCities(SchemaTestCase):
+
+    def test_cities(self):
+        study = self.get_study('NCT01565668')
+        cities = study.cities
+        _cities = ['Los Angeles', 'Chicago', 'Baltimore', 'Boston', 'Minneapolis', 'Rochester', 'Hackensack',
+                   'New York', 'Hershey', 'Philadelphia', 'Charleston', 'Nashville', 'Dallas',
+                   'Houston', 'Seattle', 'Angers', 'Grenoble', 'Paris', 'Pessac', 'Bologna', 'Nottingham']
+        self.assertEqual(_cities, cities)
 
 
 class TestResponsibleParty(SchemaTestCase):
 
     def test_rp_load(self):
-        with mock.patch('clinical_trials.clinical_study.get_schema') as donk:
-            donk.return_value = self.schema
-            with mock.patch("clinical_trials.clinical_study.get_study") as dink:
-                dink.return_value = self.cache.get('NCT01565668')
-                study = ClinicalStudy.from_nctid('NCT01565668')
-                rps = study.responsible_parties
-            self.assertEqual(1, len(rps))
+        study = self.get_study('NCT01565668')
+        rps = study.responsible_parties
+        self.assertEqual(1, len(rps))
 
 
 class TestStudyKeywords(SchemaTestCase):
 
-    def test_rp_load(self):
-        with mock.patch('clinical_trials.clinical_study.get_schema') as donk:
-            donk.return_value = self.schema
-            with mock.patch("clinical_trials.clinical_study.get_study") as dink:
-                dink.return_value = self.cache.get('NCT01565668')
-                study = ClinicalStudy.from_nctid('NCT01565668')
-                keywords = study.keywords
-            self.assertEqual(4, len(keywords))
+    def test_study_keywords_load(self):
+        study = self.get_study('NCT01565668')
+        keywords = study.keywords
+        self.assertEqual(4, len(keywords))
 
 
 class TestLocationCountries(SchemaTestCase):
 
-    def test_rp_load(self):
-        with mock.patch('clinical_trials.clinical_study.get_schema') as donk:
-            donk.return_value = self.schema
-            with mock.patch("clinical_trials.clinical_study.get_study") as dink:
-                dink.return_value = self.cache.get('NCT01565668')
-                study = ClinicalStudy.from_nctid('NCT01565668')
-                countries = study.countries
-            self.assertEqual(4, len(countries))
-            for country in ('France', 'Italy', 'United Kingdom', 'United States'):
-                self.assertIn(country, countries)
+    def test_country_load(self):
+        study = self.get_study('NCT01565668')
+        countries = study.countries
+        self.assertEqual(4, len(countries))
+        for country in ('France', 'Italy', 'United Kingdom', 'United States'):
+            self.assertIn(country, countries)
+
+    def test_removed_countries(self):
+        study = self.get_study("NCT02348489")
+        countries = study.removed_countries
+        self.assertEqual('Czech Republic', countries[0])
 
 
 class TestOversightInfo(SchemaTestCase):
 
     def test_load_oversight_no_dmc(self):
-        with mock.patch('clinical_trials.clinical_study.get_schema') as donk:
-            donk.return_value = self.schema
-            with mock.patch("clinical_trials.clinical_study.get_study") as dink:
-                dink.return_value = self.cache.get('NCT01565668')
-                study = ClinicalStudy.from_nctid('NCT01565668')
-                oversight = study.oversight_info
-            # this is asserted
-            self.assertFalse(oversight.has_dmc)
-            # this is not
-            self.assertIsNone(oversight.is_us_export)
+        study = self.get_study('NCT01565668')
+        oversight = study.oversight_info
+        # this is asserted
+        self.assertFalse(oversight.has_dmc)
+        # this is not
+        self.assertIsNone(oversight.is_us_export)
 
     def test_load_oversight_with_dmc(self):
-        with mock.patch('clinical_trials.clinical_study.get_schema') as donk:
-            donk.return_value = self.schema
-            with mock.patch("clinical_trials.clinical_study.get_study") as dink:
-                dink.return_value = self.cache.get('NCT02348489')
-                study = ClinicalStudy.from_nctid('NCT02348489')
-                oversight = study.oversight_info
-            # this is asserted
-            self.assertTrue(oversight.has_dmc)
-            # this is not
-            self.assertIsNone(oversight.is_us_export)
+        study = self.get_study('NCT02348489')
+        oversight = study.oversight_info
+        # this is asserted
+        self.assertTrue(oversight.has_dmc)
+        # this is not
+        self.assertIsNone(oversight.is_us_export)
 
 
 class TestEligibility(SchemaTestCase):
 
     def test_parse_eligibility_criteria_gender(self):
-        with mock.patch('clinical_trials.clinical_study.get_schema') as donk:
-            donk.return_value = self.schema
-            with mock.patch("clinical_trials.clinical_study.get_study") as dink:
-                dink.return_value = self.cache.get('NCT02348489')
-                study = ClinicalStudy.from_nctid('NCT02348489')
-                eligibility = study.eligibility
-            self.assertEqual('All', eligibility.gender)
-            self.assertFalse(eligibility.gender_based)
+        study = self.get_study('NCT02348489')
+        eligibility = study.eligibility
+        self.assertEqual('All', eligibility.gender)
+        self.assertFalse(eligibility.gender_based)
 
     def test_healthy_volunteers(self):
-        with mock.patch('clinical_trials.clinical_study.get_schema') as donk:
-            donk.return_value = self.schema
-            with mock.patch("clinical_trials.clinical_study.get_study") as dink:
-                dink.return_value = self.cache.get('NCT02348489')
-                study = ClinicalStudy.from_nctid('NCT02348489')
-                eligibility = study.eligibility
-            self.assertEqual("No", eligibility.healty_volunteers)
+        study = self.get_study('NCT02348489')
+        eligibility = study.eligibility
+        self.assertEqual("No", eligibility.healty_volunteers)
 
 
 class TestArmGroup(SchemaTestCase):
@@ -219,19 +218,15 @@ class TestArmGroup(SchemaTestCase):
         """
         We can load all the arms
         """
-        with mock.patch('clinical_trials.clinical_study.get_schema') as donk:
-            donk.return_value = self.schema
-            with mock.patch("clinical_trials.clinical_study.get_study") as dink:
-                dink.return_value = self.cache.get('NCT02348489')
-                study = ClinicalStudy.from_nctid('NCT02348489')
-                arms = study.arms
-            self.assertEqual(2, len(arms))
-            for arm in arms:
-                self.assertIn(arm.arm_group_label, ('SGI-110 (guadecitabine)', 'Treatment Choice'))
-                if arm.arm_group_label == 'Treatment Choice':
-                    self.assertEqual('Active Comparator', arm.arm_group_type)
-                else:
-                    self.assertEqual('Experimental', arm.arm_group_type)
+        study = self.get_study('NCT02348489')
+        arms = study.arms
+        self.assertEqual(2, len(arms))
+        for arm in arms:
+            self.assertIn(arm.arm_group_label, ('SGI-110 (guadecitabine)', 'Treatment Choice'))
+            if arm.arm_group_label == 'Treatment Choice':
+                self.assertEqual('Active Comparator', arm.arm_group_type)
+            else:
+                self.assertEqual('Experimental', arm.arm_group_type)
 
 
 class TestInterventions(SchemaTestCase):
@@ -240,37 +235,29 @@ class TestInterventions(SchemaTestCase):
         """
         We can load all the interventions
         """
-        with mock.patch('clinical_trials.clinical_study.get_schema') as donk:
-            donk.return_value = self.schema
-            with mock.patch("clinical_trials.clinical_study.get_study") as dink:
-                dink.return_value = self.cache.get('NCT01565668')
-                study = ClinicalStudy.from_nctid('NCT01565668')
-                interventions = study.interventions
-            self.assertEqual(1, len(interventions))
-            for intervention in interventions:
-                self.assertEqual("Drug", intervention.intervention_type)
-                self.assertEqual("AC220", intervention.intervention_name)
-                self.assertEqual(2, len(intervention.arms))
-                self.assertEqual(2, len(intervention.aliases))
-                for alias in intervention.aliases:
-                    self.assertIn(alias, ('Quizartinib', 'ASP2689'))
+        study = self.get_study('NCT01565668')
+        interventions = study.interventions
+        self.assertEqual(1, len(interventions))
+        for intervention in interventions:
+            self.assertEqual("Drug", intervention.intervention_type)
+            self.assertEqual("AC220", intervention.intervention_name)
+            self.assertEqual(2, len(intervention.arms))
+            self.assertEqual(2, len(intervention.aliases))
+            for alias in intervention.aliases:
+                self.assertIn(alias, ('Quizartinib', 'ASP2689'))
 
     def test_loads_interventions_with_single_labels(self):
         """
         We can load all the interventions
         """
-        with mock.patch('clinical_trials.clinical_study.get_schema') as donk:
-            donk.return_value = self.schema
-            with mock.patch("clinical_trials.clinical_study.get_study") as dink:
-                dink.return_value = self.cache.get('NCT02348489')
-                study = ClinicalStudy.from_nctid('NCT02348489')
-                interventions = study.interventions
-            self.assertEqual(2, len(interventions))
-            for intervention in interventions:
-                self.assertEqual(intervention.intervention_type, "Drug")
-                self.assertIn(intervention.intervention_name, ("SGI-110 (guadecitabine)", "Treatment Choice"))
-                self.assertEqual(1, len(intervention.arms))
-                self.assertIsNone(intervention.aliases)
+        study = self.get_study('NCT02348489')
+        interventions = study.interventions
+        self.assertEqual(2, len(interventions))
+        for intervention in interventions:
+            self.assertEqual(intervention.intervention_type, "Drug")
+            self.assertIn(intervention.intervention_name, ("SGI-110 (guadecitabine)", "Treatment Choice"))
+            self.assertEqual(1, len(intervention.arms))
+            self.assertIsNone(intervention.aliases)
 
 
 class TestStudyPhase(SchemaTestCase):
@@ -335,63 +322,51 @@ class TestStudyTrail(SchemaTestCase):
 
     def test_study_trail_489(self):
         study_id = 'NCT02348489'
-        with mock.patch('clinical_trials.clinical_study.get_schema') as donk:
-            donk.return_value = self.schema
-            with mock.patch("clinical_trials.clinical_study.get_study") as dink:
-                dink.return_value = self.cache.get(study_id)
-                study = ClinicalStudy.from_nctid(study_id)
-                trail = study.trail
-            self.assertFalse(trail.has_results)
-            self.assertEqual(trail.study_first_posted.date, datetime.date(year=2015, month=1, day=28))
-            self.assertEqual(trail.study_first_posted.date_type, "Estimate")
-            #   <study_first_submitted>January 22, 2015</study_first_submitted>
-            #   <study_first_submitted_qc>January 22, 2015</study_first_submitted_qc>
-            self.assertEqual(trail.study_first_submitted.date, datetime.date(year=2015, month=1, day=22))
-            self.assertEqual(trail.study_first_submitted_qc.date, datetime.date(year=2015, month=1, day=22))
+        study = self.get_study(study_id)
+        trail = study.trail
+        self.assertFalse(trail.has_results)
+        self.assertEqual(trail.study_first_posted.date, datetime.date(year=2015, month=1, day=28))
+        self.assertEqual(trail.study_first_posted.date_type, "Estimate")
+        #   <study_first_submitted>January 22, 2015</study_first_submitted>
+        #   <study_first_submitted_qc>January 22, 2015</study_first_submitted_qc>
+        self.assertEqual(trail.study_first_submitted.date, datetime.date(year=2015, month=1, day=22))
+        self.assertEqual(trail.study_first_submitted_qc.date, datetime.date(year=2015, month=1, day=22))
 
     def test_study_trail_668(self):
         study_id = 'NCT01565668'
-        with mock.patch('clinical_trials.clinical_study.get_schema') as donk:
-            donk.return_value = self.schema
-            with mock.patch("clinical_trials.clinical_study.get_study") as dink:
-                dink.return_value = self.cache.get(study_id)
-                study = ClinicalStudy.from_nctid(study_id)
-                trail = study.trail
-            self.assertFalse(trail.has_results)
-            # March 29, 2012
-            self.assertEqual(trail.study_first_posted.date, datetime.date(year=2012, month=3, day=29))
-            self.assertEqual(trail.study_first_posted.date_type, "Estimate")
-            #   <study_first_submitted>March 27, 2012</study_first_submitted>
-            #   <study_first_submitted_qc>March 27, 2012</study_first_submitted_qc>
-            self.assertEqual(trail.study_first_submitted.date, datetime.date(year=2012, month=3, day=27))
-            self.assertEqual(trail.study_first_submitted_qc.date, datetime.date(year=2012, month=3, day=27))
+        study = self.get_study(study_id)
+        trail = study.trail
+        self.assertFalse(trail.has_results)
+        # March 29, 2012
+        self.assertEqual(trail.study_first_posted.date, datetime.date(year=2012, month=3, day=29))
+        self.assertEqual(trail.study_first_posted.date_type, "Estimate")
+        #   <study_first_submitted>March 27, 2012</study_first_submitted>
+        #   <study_first_submitted_qc>March 27, 2012</study_first_submitted_qc>
+        self.assertEqual(trail.study_first_submitted.date, datetime.date(year=2012, month=3, day=27))
+        self.assertEqual(trail.study_first_submitted_qc.date, datetime.date(year=2012, month=3, day=27))
 
     def test_study_trail_534(self):
         study_id = 'NCT02536534'
-        with mock.patch('clinical_trials.clinical_study.get_schema') as donk:
-            donk.return_value = self.schema
-            with mock.patch("clinical_trials.clinical_study.get_study") as dink:
-                dink.return_value = self.cache.get(study_id)
-                study = ClinicalStudy.from_nctid(study_id)
-                trail = study.trail
-            self.assertFalse(trail.has_results)
-            self.assertEqual(trail.study_first_posted.date, datetime.date(year=2015, month=9, day=1))
-            self.assertEqual(trail.study_first_posted.date_type, "Estimate")
-            self.assertEqual(trail.study_first_submitted.date, datetime.date(year=2015, month=8, day=10))
-            self.assertEqual(trail.study_first_submitted_qc.date, datetime.date(year=2015, month=8, day=31))
-            # <disposition_first_submitted>April 6, 2017</disposition_first_submitted>
-            # <disposition_first_submitted_qc>April 6, 2017</disposition_first_submitted_qc>
-            # <disposition_first_posted type="Actual">April 10, 2017</disposition_first_posted>
-            self.assertIsNone(trail.disposition_first_posted)
-            self.assertIsNone(trail.disposition_first_submitted)
-            self.assertIsNone(trail.disposition_first_submitted_qc)
-            #   <last_update_submitted>December 19, 2017</last_update_submitted>
-            #   <last_update_submitted_qc>December 19, 2017</last_update_submitted_qc>
-            #   <last_update_posted type="Actual">December 20, 2017</last_update_posted>
-            self.assertEqual(trail.last_update_posted.date, datetime.date(year=2017, month=12, day=20))
-            self.assertEqual(trail.last_update_posted.date_type, "Actual")
-            self.assertEqual(trail.last_update_submitted.date, datetime.date(year=2017, month=12, day=19))
-            self.assertEqual(trail.last_update_submitted_qc.date, datetime.date(year=2017, month=12, day=19))
+        study = self.get_study(study_id)
+        trail = study.trail
+        self.assertFalse(trail.has_results)
+        self.assertEqual(trail.study_first_posted.date, datetime.date(year=2015, month=9, day=1))
+        self.assertEqual(trail.study_first_posted.date_type, "Estimate")
+        self.assertEqual(trail.study_first_submitted.date, datetime.date(year=2015, month=8, day=10))
+        self.assertEqual(trail.study_first_submitted_qc.date, datetime.date(year=2015, month=8, day=31))
+        # <disposition_first_submitted>April 6, 2017</disposition_first_submitted>
+        # <disposition_first_submitted_qc>April 6, 2017</disposition_first_submitted_qc>
+        # <disposition_first_posted type="Actual">April 10, 2017</disposition_first_posted>
+        self.assertIsNone(trail.disposition_first_posted)
+        self.assertIsNone(trail.disposition_first_submitted)
+        self.assertIsNone(trail.disposition_first_submitted_qc)
+        #   <last_update_submitted>December 19, 2017</last_update_submitted>
+        #   <last_update_submitted_qc>December 19, 2017</last_update_submitted_qc>
+        #   <last_update_posted type="Actual">December 20, 2017</last_update_posted>
+        self.assertEqual(trail.last_update_posted.date, datetime.date(year=2017, month=12, day=20))
+        self.assertEqual(trail.last_update_posted.date_type, "Actual")
+        self.assertEqual(trail.last_update_submitted.date, datetime.date(year=2017, month=12, day=19))
+        self.assertEqual(trail.last_update_submitted_qc.date, datetime.date(year=2017, month=12, day=19))
 
 
 class TestStudyConditions(SchemaTestCase):
@@ -415,26 +390,18 @@ class TestLink(SchemaTestCase):
         With links we get links ;-)
         """
         study_id = 'NCT02536534'
-        with mock.patch('clinical_trials.clinical_study.get_schema') as donk:
-            donk.return_value = self.schema
-            with mock.patch("clinical_trials.clinical_study.get_study") as dink:
-                dink.return_value = self.cache.get(study_id)
-                study = ClinicalStudy.from_nctid(study_id)
-                links = study.links
-            self.assertEqual(len(links), 3)
+        study = self.get_study(study_id)
+        links = study.links
+        self.assertEqual(len(links), 3)
 
     def test_no_links(self):
         """
         With no links, well you get the picture
         """
         study_id = 'NCT01565668'
-        with mock.patch('clinical_trials.clinical_study.get_schema') as donk:
-            donk.return_value = self.schema
-            with mock.patch("clinical_trials.clinical_study.get_study") as dink:
-                dink.return_value = self.cache.get(study_id)
-                study = ClinicalStudy.from_nctid(study_id)
-                links = study.links
-            self.assertEqual(len(links), 0)
+        study = self.get_study(study_id)
+        links = study.links
+        self.assertEqual(len(links), 0)
 
 
 class TestCompletionDate(SchemaTestCase):
@@ -444,26 +411,18 @@ class TestCompletionDate(SchemaTestCase):
         Get the completion date
         """
         study_id = 'NCT01565668'
-        with mock.patch('clinical_trials.clinical_study.get_schema') as donk:
-            donk.return_value = self.schema
-            with mock.patch("clinical_trials.clinical_study.get_study") as dink:
-                dink.return_value = self.cache.get(study_id)
-                study = ClinicalStudy.from_nctid(study_id)
-            self.assertEqual(study.completion_date.date, datetime.date(month=3, year=2015, day=1))
-            self.assertEqual(study.completion_date.date_type, "Actual")
+        study = self.get_study(study_id)
+        self.assertEqual(study.completion_date.date, datetime.date(month=3, year=2015, day=1))
+        self.assertEqual(study.completion_date.date_type, "Actual")
 
     def test_anticipated_completion_date(self):
         """
         Get the completion date
         """
         study_id = 'NCT02348489'
-        with mock.patch('clinical_trials.clinical_study.get_schema') as donk:
-            donk.return_value = self.schema
-            with mock.patch("clinical_trials.clinical_study.get_study") as dink:
-                dink.return_value = self.cache.get(study_id)
-                study = ClinicalStudy.from_nctid(study_id)
-            self.assertEqual(study.completion_date.date, datetime.date(month=6, year=2018, day=1))
-            self.assertEqual(study.completion_date.date_type, "Anticipated")
+        study = self.get_study(study_id)
+        self.assertEqual(study.completion_date.date, datetime.date(month=6, year=2018, day=1))
+        self.assertEqual(study.completion_date.date_type, "Anticipated")
 
 
 class TestPrimaryCompletionDate(SchemaTestCase):
@@ -473,74 +432,67 @@ class TestPrimaryCompletionDate(SchemaTestCase):
         Get the primary completion date
         """
         study_id = 'NCT01565668'
-        with mock.patch('clinical_trials.clinical_study.get_schema') as donk:
-            donk.return_value = self.schema
-            with mock.patch("clinical_trials.clinical_study.get_study") as dink:
-                dink.return_value = self.cache.get(study_id)
-                study = ClinicalStudy.from_nctid(study_id)
-            self.assertEqual(study.primary_completion_date.date, datetime.date(month=3, year=2015, day=1))
-            self.assertEqual(study.primary_completion_date.date_type, "Actual")
+        study = self.get_study(study_id)
+        self.assertEqual(study.primary_completion_date.date, datetime.date(month=3, year=2015, day=1))
+        self.assertEqual(study.primary_completion_date.date_type, "Actual")
 
     def test_anticipated_primary_completion_date(self):
         """
         Get the anticipated primary completion date
         """
         study_id = 'NCT02348489'
-        with mock.patch('clinical_trials.clinical_study.get_schema') as donk:
-            donk.return_value = self.schema
-            with mock.patch("clinical_trials.clinical_study.get_study") as dink:
-                dink.return_value = self.cache.get(study_id)
-                study = ClinicalStudy.from_nctid(study_id)
-            self.assertEqual(study.completion_date.date, datetime.date(month=6, year=2018, day=1))
-            self.assertEqual(study.completion_date.date_type, "Anticipated")
+        study = self.get_study(study_id)
+        self.assertEqual(study.completion_date.date, datetime.date(month=6, year=2018, day=1))
+        self.assertEqual(study.completion_date.date_type, "Anticipated")
 
 
 class TestEnrollment(SchemaTestCase):
 
     def test_enrollment(self):
         study_id = 'NCT02348489'
-        with mock.patch('clinical_trials.clinical_study.get_schema') as donk:
-            donk.return_value = self.schema
-            with mock.patch("clinical_trials.clinical_study.get_study") as dink:
-                dink.return_value = self.cache.get(study_id)
-                study = ClinicalStudy.from_nctid(study_id)
-            self.assertEqual(study.enrollment_info.count, 815)
-            self.assertEqual(study.enrollment_info.count_type, "Actual")
+        study = self.get_study(study_id)
+        self.assertEqual(study.enrollment_info.count, 815)
+        self.assertEqual(study.enrollment_info.count_type, "Actual")
 
 
 class TestOutcomes(SchemaTestCase):
 
     def test_enrollment_489(self):
         study_id = 'NCT02348489'
-        with mock.patch('clinical_trials.clinical_study.get_schema') as donk:
-            donk.return_value = self.schema
-            with mock.patch("clinical_trials.clinical_study.get_study") as dink:
-                dink.return_value = self.cache.get(study_id)
-                study = ClinicalStudy.from_nctid(study_id)
-            self.assertEqual(len(study.outcomes.primary), 2)
-            self.assertEqual(len(study.outcomes.secondary), 6)
-            self.assertEqual(len(study.outcomes.other), 0)
+        study = self.get_study(study_id)
+        self.assertEqual(len(study.outcomes.primary), 2)
+        self.assertEqual(len(study.outcomes.secondary), 6)
+        self.assertEqual(len(study.outcomes.other), 0)
 
     def test_enrollment_668(self):
         study_id = 'NCT01565668'
-        with mock.patch('clinical_trials.clinical_study.get_schema') as donk:
-            donk.return_value = self.schema
-            with mock.patch("clinical_trials.clinical_study.get_study") as dink:
-                dink.return_value = self.cache.get(study_id)
-                study = ClinicalStudy.from_nctid(study_id)
-            self.assertEqual(len(study.outcomes.primary), 2)
-            self.assertEqual(len(study.outcomes.secondary), 8)
-            self.assertEqual(len(study.outcomes.other), 0)
+        study = self.get_study(study_id)
+        self.assertEqual(len(study.outcomes.primary), 2)
+        self.assertEqual(len(study.outcomes.secondary), 8)
+        self.assertEqual(len(study.outcomes.other), 0)
 
 
 class TestVerificationDate(SchemaTestCase):
 
-    def test_enrollment_489(self):
+    def test_verification_date(self):
         study_id = 'NCT02348489'
-        with mock.patch('clinical_trials.clinical_study.get_schema') as donk:
-            donk.return_value = self.schema
-            with mock.patch("clinical_trials.clinical_study.get_study") as dink:
-                dink.return_value = self.cache.get(study_id)
-                study = ClinicalStudy.from_nctid(study_id)
-            self.assertEqual(study.verification_date.date, datetime.date(month=12, day=1, year=2017))
+        study = self.get_study(study_id)
+        self.assertEqual(study.verification_date.date, datetime.date(month=12, day=1, year=2017))
 
+
+class TestPatientData(SchemaTestCase):
+    def test_patient_data_as_declared(self):
+        study_id = 'NCT00985114'
+        study = self.get_study(study_id)
+        patient_data = study.patient_data
+        self.assertEqual('Undecided', patient_data.sharing_ipd)
+        self.assertEqual("""Yes
+De-identified individual subject data is on file at the Sponsor""", patient_data.ipd_description)
+
+    def test_patient_data_undeclared(self):
+        """
+        Undeclared Patient Data
+        """
+        study_id = 'NCT02348489'
+        study = self.get_study(study_id)
+        self.assertIsNone(study.patient_data)
