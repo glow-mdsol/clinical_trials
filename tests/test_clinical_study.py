@@ -26,10 +26,11 @@ def warmup_cache():
 
 class SchemaTestCase(unittest.TestCase):
 
-    def setUp(self):
-        self.cache = warmup_cache()
+    @classmethod
+    def setUpClass(cls):
+        cls.cache = warmup_cache()
         _schema = open(SCHEMA_LOCATION)
-        self.schema = XMLSchema(_schema)
+        cls.schema = XMLSchema(_schema)
 
     def get_study(self, nct_id):
         with mock.patch('clinical_trials.clinical_study.get_schema') as donk:
