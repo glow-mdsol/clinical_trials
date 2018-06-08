@@ -92,7 +92,7 @@ class Location(CTStruct):
     """
 
     def __init__(self, facility=None, status=None, contact=None, contact_backup=None, investigator=None):
-        self.facility = facility
+        self.facility = Facility.from_dict(facility) if facility is not None else None
         self.status = status
         self.contact = Contact.from_dict('location.contact', contact) if contact is not None else None
         self.contact_backup = Contact.from_dict('location.contact_backup', contact_backup) \
@@ -333,13 +333,18 @@ class StudyOutcomes:
         else:
             self.other.append(OutcomeStruct.from_dict(outcome_dict))
 
+class PatientData(CTStruct):
+
+    def __init__(self, sharing_ipd=None, ipd_description=None):
+        self.sharing_ipd = sharing_ipd
+        self.ipd_description = ipd_description
+
 
 class ClinicalStudy:
 
     def __init__(self, data):
         self._data = data
         self._people = None
-        self._facilities = None
         self._locations = None
         self._responsible_parties = None
         self._oversight_info = None
@@ -349,6 +354,17 @@ class ClinicalStudy:
         self._drug_names = []
         self._trail = None
         self._outcomes = None
+        self._cities = None
+
+    @property
+    def patient_data(self):
+        _patient_data = glom(self._data, 'patient_data', default=None)
+        if _patient_data:
+            return PatientData.from_dict(glom(self._data, 'patient_data'))
+
+    @property
+    def removed_countries(self):
+        return glom(self._data, 'removed_countries.country', default=[])
 
     @property
     def verification_date(self):
@@ -505,7 +521,18 @@ class ClinicalStudy:
 
     @property
     def facilities(self):
-        return self._facilities if self._facilities else []
+        return [x.facility for x in self.locations]
+
+    @property
+    def cities(self):
+        if self._cities is None:
+            self._cities = []
+            for facility in self.facilities:
+                if facility.address:
+                    if facility.address.city:
+                        if not facility.address.city in self._cities:
+                            self._cities.append(facility.address.city)
+        return self._cities
 
     @property
     def arms(self):
@@ -665,12 +692,17 @@ class ClinicalStudy:
                 if overall:
                     self._add_person('clinical_study.{}'.format(contact), overall)
 
+    @property
     def mesh_terms(self):
         """
         Return the assigned MeSH terms
         :return:
         """
-        return glom(self._data, 'condition_browse.mesh_term', default=[])
+        terms = {}
+        for stat in ('condition', 'intervention'):
+            for term in glom(self._data, '{}_browse.mesh_term'.format(stat), default=[]):
+                terms.setdefault(stat, []).append(term)
+        return terms
 
     def conditions(self):
         """
