@@ -71,6 +71,18 @@ class TestEligibility(SchemaTestCase):
             processed = process_eligibility(content)
             self.assertEqual(4, len(processed.get('exclusion')))
 
+    def test_parsed_exclusion_114(self):
+        study = 'NCT00985114'
+        with mock.patch('clinical_trials.clinical_study.get_schema') as donk:
+            donk.return_value = self.schema
+            with mock.patch("clinical_trials.clinical_study.get_study") as dink:
+                dink.return_value = self.cache.get(study)
+                study = ClinicalStudy.from_nctid(study)
+            content = study.eligibility.criteria
+            processed = process_eligibility(content)
+            self.assertEqual(8, len(processed.get('inclusion')))
+            self.assertEqual(5, len(processed.get('exclusion')))
+
 
 class TestTextBlock(SchemaTestCase):
 
