@@ -186,3 +186,4 @@ venv.bak/
 .mypy_cache/
 
 cov_html
+
