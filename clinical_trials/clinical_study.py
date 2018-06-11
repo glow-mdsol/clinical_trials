@@ -94,11 +94,13 @@ class Location(CTStruct):
     def __init__(self, facility=None, status=None, contact=None, contact_backup=None, investigator=None):
         self.facility = Facility.from_dict(facility) if facility is not None else None
         self.status = status
-        self.contact = Contact.from_dict('location.contact', contact) if contact is not None else None
-        self.contact_backup = Contact.from_dict('location.contact_backup', contact_backup) \
+        self.contact = Contact.from_dict(contact) if contact is not None else None
+        self.contact_backup = Contact.from_dict(contact_backup) \
             if contact_backup is not None else None
-        self.investigator = Investigator.from_dict('location.investigator', investigator) \
-            if investigator is not None else None
+        self.investigators = []
+        if investigator is not None:
+            for _inv in investigator:
+                self.investigators.append(Investigator.from_dict(_inv))
 
 
 class ResponsibleParty(CTStruct):
@@ -116,19 +118,18 @@ class ResponsibleParty(CTStruct):
 
 class StudyContact(CTStruct):
 
-    def __init__(self, context=None, first_name=None, middle_name=None, last_name=None, degrees=None):
+    def __init__(self, first_name=None, middle_name=None, last_name=None, degrees=None):
         self.first_name = first_name
         self.middle_name = middle_name
         self.last_name = last_name
         self.degrees = degrees
-        self.context = context
 
 
 class Contact(StudyContact):
 
-    def __init__(self, context=None, first_name=None, middle_name=None, last_name=None, degrees=None,
+    def __init__(self, first_name=None, middle_name=None, last_name=None, degrees=None,
                  phone=None, phone_ext=None, email=None):
-        super(Contact, self).__init__(context, first_name, middle_name, last_name, degrees)
+        super(Contact, self).__init__(first_name, middle_name, last_name, degrees)
         self.phone = phone
         self.phone_ext = phone_ext
         self.email = email
@@ -136,10 +137,10 @@ class Contact(StudyContact):
 
 class Investigator(StudyContact):
 
-    def __init__(self, context=None, first_name=None,
+    def __init__(self, first_name=None,
                  middle_name=None, last_name=None,
                  degrees=None, role=None, affiliation=None):
-        super(Investigator, self).__init__(context, first_name, middle_name, last_name, degrees)
+        super(Investigator, self).__init__(first_name, middle_name, last_name, degrees)
         self.role = role
         self.affiliation = affiliation
 
@@ -184,14 +185,12 @@ class StudyEligibility(CTStruct):
         if self._inclusion_criteria is None:
             processed = process_eligibility(self.criteria)
             self._inclusion_criteria = processed.get('inclusion', [])
-            self._exclusion_criteria = processed.get('exclusion', [])
         return self._inclusion_criteria
 
     @property
     def exclusion_criteria(self):
         if self._exclusion_criteria is None:
             processed = process_eligibility(self.criteria)
-            self._inclusion_criteria = processed.get('inclusion', [])
             self._exclusion_criteria = processed.get('exclusion', [])
         return self._exclusion_criteria
 
@@ -333,11 +332,18 @@ class StudyOutcomes:
         else:
             self.other.append(OutcomeStruct.from_dict(outcome_dict))
 
+
 class PatientData(CTStruct):
 
     def __init__(self, sharing_ipd=None, ipd_description=None):
         self.sharing_ipd = sharing_ipd
         self.ipd_description = ipd_description
+
+
+class Reference(CTStruct):
+    def __init__(self, citation=None, PMID=None):
+        self.citation = citation
+        self.pubmed_id = PMID
 
 
 class ClinicalStudy:
@@ -355,6 +361,29 @@ class ClinicalStudy:
         self._trail = None
         self._outcomes = None
         self._cities = None
+        self._officials = None
+
+    @property
+    def references(self):
+        if glom(self._data, 'reference', default=None):
+            return [Reference.from_dict(x) for x in glom(self._data, 'reference')]
+        return []
+
+    @property
+    def results_references(self):
+        if glom(self._data, 'results_reference', default=None):
+            return [Reference.from_dict(x) for x in glom(self._data, 'results_reference')]
+        return []
+
+    @property
+    def overall_contact(self):
+        if glom(self._data, 'overall_contact', default=None):
+            return Contact.from_dict(glom(self._data, 'overall_contact'))
+
+    @property
+    def overall_contact_backup(self):
+        if glom(self._data, 'overall_contact_backup', default=None):
+            return Contact.from_dict(glom(self._data, 'overall_contact_backup'))
 
     @property
     def patient_data(self):
@@ -467,17 +496,6 @@ class ClinicalStudy:
         return glom(self._data, 'keyword', default=[])
 
     @property
-    def study_people(self):
-        """
-        Return all the Contacts associated with the study, intended for bundling
-        :rtype: list(StudyContact)
-        """
-        if self._people is None:
-            # If none defined, load the core people
-            self.get_people()
-        return self._people
-
-    @property
     def interventions(self):
         """
         Get the Interventions
@@ -539,6 +557,14 @@ class ClinicalStudy:
         if self._arms is None:
             self._add_arms()
         return self._arms
+
+    @property
+    def overall_officials(self):
+        if self._officials is None:
+            self._officials = []
+            for official in glom(self._data, 'overall_official', default=[]):
+                self._officials.append(Investigator.from_dict(official))
+        return self._officials
 
     def add_outcomes(self):
         """
@@ -630,12 +656,6 @@ class ClinicalStudy:
         location = Location(**location_data)
         if self._locations is None:
             self._locations = []
-        if not location.investigator in self.study_people:
-            self._people.append(location.investigator)
-        if not location.contact:
-            self._people.append(location.contact)
-        if not location.contact_backup:
-            self._people.append(location.contact_backup)
         self._locations.append(location)
 
     def add_responsible_parties(self):
@@ -654,29 +674,8 @@ class ClinicalStudy:
         for location in glom(self._data, 'location', default=[]):
             self._add_location(location)
 
-    def _add_person(self, context, contact):
-        """
-        Add a person to the people collection
-        :param context:
-        :param contact:
-        :return:
-        """
-        # Munge to a list
-        if not isinstance(contact, list):
-            _contact = [contact]
-        else:
-            _contact = contact
-        for _overall in _contact:
-            _overall.update(dict(context=context))
-            if context in ('location.investigator',
-                           'clinical_study.overall_official'):
-                self._people.append(Investigator(**_overall))
-            elif context in ('location.contact', 'location.contact_backup',
-                             'clinical_study.overall_contact',
-                             'clinical_study.overall_contact_backup'):
-                self._people.append(Contact(**_overall))
-
-    def get_people(self):
+    @property
+    def study_people(self):
         """
         Get the people involved (at the study level)
         contact_struct -> location_struct.contact, location_struct.contact_backup, clinical_study.overall_contact,
@@ -686,11 +685,25 @@ class ClinicalStudy:
         """
         if not self._people:
             self._people = []
-            # Overall - children
-            for contact in ('overall_official', 'overall_contact', 'overall_contact_backup'):
-                overall = glom(self._data, contact, default=None)
-                if overall:
-                    self._add_person('clinical_study.{}'.format(contact), overall)
+            # add the overall_contact
+            if self.overall_contact:
+                self._people.append(self.overall_contact)
+            if self.overall_contact_backup:
+                self._people.append(self.overall_contact_backup)
+            if self.overall_officials:
+                for official in self.overall_officials:
+                    self._people.append(official)
+            for location in self.locations:
+                # load the location people
+                if location.investigators:
+                    for investigator in location.investigators:
+                        if investigator not in self.study_people:
+                            self._people.append(investigator)
+                if location.contact and location.contact not in self.study_people:
+                    self._people.append(location.contact)
+                if location.contact_backup and location.contact_backup not in self.study_people:
+                    self._people.append(location.contact_backup)
+        return self._people
 
     @property
     def mesh_terms(self):
