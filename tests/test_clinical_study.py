@@ -88,6 +88,10 @@ class TestGetPeople(SchemaTestCase):
         study = self.get_study('NCT01565668')
         self.assertEqual(1, len(study.study_people))
 
+    def test_get_people_with_diverse_set(self):
+        study = self.get_study('NCT02041234')
+        self.assertEqual(15, len(study.study_people))
+
 
 class TestGetMeSHTerms(SchemaTestCase):
 
@@ -211,6 +215,25 @@ class TestEligibility(SchemaTestCase):
         study = self.get_study('NCT02348489')
         eligibility = study.eligibility
         self.assertEqual("No", eligibility.healty_volunteers)
+
+    def test_study_pop(self):
+        study = self.get_study('NCT02536534')
+        eligibility = study.eligibility
+        self.assertEqual("Canadian patients are eligible for the study if they have been "
+                         "diagnosed with symptomatic Pulmonary Arterial Hypertension (PAH) or "
+                         "Chronic Thromboembolic Pulmonary Hypertension (CTEPH) and are stable on "
+                         "optimal medical therapy and who meet the study's eligibility criteria",
+                         eligibility.study_pop)
+
+    def test_inclusion_criteria(self):
+        study = self.get_study('NCT02536534')
+        inclusion = study.eligibility.inclusion_criteria
+        self.assertEqual(10, len(inclusion))
+
+    def test_exclusion_criteria(self):
+        study = self.get_study('NCT02536534')
+        exclusion = study.eligibility.exclusion_criteria
+        self.assertEqual(4, len(exclusion))
 
 
 class TestArmGroup(SchemaTestCase):
@@ -497,3 +520,41 @@ De-identified individual subject data is on file at the Sponsor""", patient_data
         study_id = 'NCT02348489'
         study = self.get_study(study_id)
         self.assertIsNone(study.patient_data)
+
+
+class TestOverallOfficial(SchemaTestCase):
+
+    def test_overall_official(self):
+        study_id = 'NCT01565668'
+        study = self.get_study(study_id)
+        self.assertEqual(1, len(study.overall_officials))
+        self.assertEqual('Medical Monitor, Ambit Biosciences Corporation', study.overall_officials[0].affiliation)
+        self.assertEqual('Guy Gammon, MB, BS, MRCP', study.overall_officials[0].last_name)
+        self.assertEqual('Study Director', study.overall_officials[0].role)
+
+    def test_no_overall_official(self):
+        study_id = 'NCT02348489'
+        study = self.get_study(study_id)
+        self.assertEqual(0, len(study.overall_officials))
+
+
+class TestOverallContact(SchemaTestCase):
+
+    def test_no_overall_contact(self):
+        study_id = 'NCT02348489'
+        study = self.get_study(study_id)
+        self.assertIsNone(study.overall_contact)
+
+    def test_overall_contact(self):
+        study_id = 'NCT02041234'
+        study = self.get_study(study_id)
+        self.assertEqual('Anton Cheng, MBBS', study.overall_contact.last_name)
+        self.assertEqual('6602 3305', study.overall_contact.phone)
+        self.assertEqual('cheng.anton.ks@alexandrahealth.com.sg', study.overall_contact.email)
+
+    def test_overall_contact_backup(self):
+        study_id = 'NCT02041234'
+        study = self.get_study(study_id)
+        self.assertEqual('Bernice Li Ting Tan', study.overall_contact_backup.last_name)
+        self.assertEqual('6602 3169', study.overall_contact_backup.phone)
+        self.assertEqual('tan.bernice.lt@alexandrahealth.com.sg', study.overall_contact_backup.email)
