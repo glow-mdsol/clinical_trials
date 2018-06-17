@@ -558,3 +558,23 @@ class TestOverallContact(SchemaTestCase):
         self.assertEqual('Bernice Li Ting Tan', study.overall_contact_backup.last_name)
         self.assertEqual('6602 3169', study.overall_contact_backup.phone)
         self.assertEqual('tan.bernice.lt@alexandrahealth.com.sg', study.overall_contact_backup.email)
+
+
+class TestFromFile(SchemaTestCase):
+
+    def test_local_file_local_schema(self):
+        study = ClinicalStudy.from_file(os.path.join(os.path.dirname(__file__), 'fixtures', 'NCT00985114.xml'),
+                                        local_schema=True)
+        self.assertEqual('NCT00985114', study.nct_id)
+
+    def test_local_file_remote_schema(self):
+        with mock.patch('clinical_trials.clinical_study.get_schema') as donk:
+            donk.return_value = self.schema
+            study = ClinicalStudy.from_file(os.path.join(os.path.dirname(__file__), 'fixtures', 'NCT00985114.xml'))
+        donk.assert_called()
+        self.assertEqual('NCT00985114', study.nct_id)
+
+    def test_missing_file(self):
+        with self.assertRaises(ValueError) as exc:
+            study = ClinicalStudy.from_file("Some/missing/path")
+        self.assertEqual("File Some/missing/path not found", str(exc.exception))
