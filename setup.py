@@ -9,5 +9,6 @@ setup(
     license='MIT',
     author='glow-mdsol',
     author_email='glow@mdsol.com',
-    description='A simple tool for processing CT.gov records'
+    description='A simple tool for processing CT.gov records',
+    data_files=[('config', ['doc/schema/public.xsd'])]
 )
