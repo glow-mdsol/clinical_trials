@@ -1,5 +1,6 @@
 import datetime
 import logging
+import os
 
 import six
 from glom import glom
@@ -7,7 +8,7 @@ from glom import glom
 from clinical_trials.connector import get_study
 from clinical_trials.errors import StudyDefinitionInvalid
 from clinical_trials.helpers import process_textblock, process_eligibility
-from clinical_trials.schema import get_schema
+from clinical_trials.schema import get_schema, get_local_schema
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -735,3 +736,16 @@ class ClinicalStudy:
         schema = get_schema()
         content = get_study(nct_id)
         return cls(schema.to_dict(content))
+
+    @classmethod
+    def from_file(cls, filename, local_schema=False):
+        if os.path.exists(filename):
+            if local_schema:
+                schema = get_local_schema()
+            else:
+                schema = get_schema()
+            with open(filename, 'rb') as fh:
+                content = fh.read()
+            return cls(schema.to_dict(content))
+        else:
+            raise ValueError("File {} not found".format(filename))
