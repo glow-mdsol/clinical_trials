@@ -1,4 +1,2 @@
-
-
 class StudyDefinitionInvalid(Exception):
     pass
