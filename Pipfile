@@ -15,6 +15,7 @@ mock = "*"
 funcsigs = {version = "*",markers = "python_version < '3.6'"}
 tox = "*"
 coverage = "*"
+pathlib2 = {version = "*", markers = "python_version < '3.6'"}
 pytest = "*"
 pytest-runner = "*"
 pytest-xdist = "*"
