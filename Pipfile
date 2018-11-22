@@ -12,13 +12,14 @@ glom = "*"
 
 [dev-packages]
 mock = "*"
-funcsigs = {version = "*", markers="python_version < '3.6'"}
+funcsigs = {version = "*",markers = "python_version < '3.6'"}
 tox = "*"
 coverage = "*"
 pytest = "*"
 pytest-runner = "*"
 pytest-xdist = "*"
 pytest-cov = "*"
+requests-mock = "*"
 
 [requires]
 python_version = "3.6"
