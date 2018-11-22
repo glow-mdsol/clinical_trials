@@ -4,7 +4,8 @@ python:
   - "3.6"
   - "3.7"
 install:
-  - pipenv install --dev
+  - pip install pipenv
+  - pipenv sync
 script:
   - pipenv run python setup.py test
 
