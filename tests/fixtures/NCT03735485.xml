@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<clinical_study>
+  <!-- This xml conforms to an XML Schema at:
+    https://clinicaltrials.gov/ct2/html/images/info/public.xsd -->
+  <required_header>
+    <download_date>ClinicalTrials.gov processed this data on November 09, 2018</download_date>
+    <link_text>Link to the current ClinicalTrials.gov record.</link_text>
+    <url>https://clinicaltrials.gov/show/NCT03735485</url>
+  </required_header>
+  <id_info>
+    <org_study_id>SevgiMC</org_study_id>
+    <nct_id>NCT03735485</nct_id>
+  </id_info>
+  <brief_title>Comparison of the Proprioceptive Neuromuscular Facilitation and Mobilization In Subacromial Impingement Syndrome</brief_title>
+  <official_title>Comparison of the Effectiveness of Proprioceptive Neuromuscular Facilitation Exercises and Shoulder Mobilization Patients With Subacromial Impingement Syndrome: A Randomised Clinical Trial</official_title>
+  <sponsors>
+    <lead_sponsor>
+      <agency>Sevgi Medical Center</agency>
+      <agency_class>Other</agency_class>
+    </lead_sponsor>
+  </sponsors>
+  <source>Sevgi Medical Center</source>
+  <oversight_info>
+    <has_dmc>No</has_dmc>
+    <is_fda_regulated_drug>No</is_fda_regulated_drug>
+    <is_fda_regulated_device>No</is_fda_regulated_device>
+  </oversight_info>
+  <brief_summary>
+    <textblock>
+      Aim of the study was to compare the effectiveness of Proprioceptive Neuromuscular
+      Facilitation (PNF) exercises and Shoulder Mobilization (SM) on pain, range of motion (ROM),
+      functionality, and muscle strength in patients with Subacromial Impingement Syndrome (SIS).
+      Patients received 20 sessions (for 4 weeks) under the supervision of a physiotherapist.
+      Patients were evaluated at baseline, at week two, at week four, and at week sixteen.
+    </textblock>
+  </brief_summary>
+  <detailed_description>
+    <textblock>
+      Aim of the study was to compare the effectiveness of Proprioceptive Neuromuscular
+      Facilitation (PNF) exercises and Shoulder Mobilization (SM) on pain, range of motion (ROM),
+      functionality, and muscle strength in patients with Subacromial Impingement Syndrome (SIS).
+      Forty-four patients were divided into three groups as Group I: Conventional physiotherapy
+      receiving group (control group; n=14), Group II: Conventional physiotherapy + PNF exercises
+      receiving group (PNF group; n=15), and Group III: conventional physiotherapy + SM receiving
+      group (SM group; n=15). Pain, ROM, muscle strength, and functionality were evaluated by using
+      visual analog scale (VAS), goniometer, push-pull dynamometer, Constant-Murley score and The
+      Disabilities of the Arm, Shoulder and Hand (DASH) Score respectively. Patients received 20
+      sessions in total under supervision of a physiotherapist. Patients were evaluated at
+      baseline, at week two, at week four, and at week sixteen.
+    </textblock>
+  </detailed_description>
+  <overall_status>Completed</overall_status>
+  <start_date type="Actual">March 3, 2017</start_date>
+  <completion_date type="Actual">January 10, 2018</completion_date>
+  <primary_completion_date type="Actual">October 2, 2017</primary_completion_date>
+  <phase>N/A</phase>
+  <study_type>Interventional</study_type>
+  <has_expanded_access>No</has_expanded_access>
+  <study_design_info>
+    <allocation>Randomized</allocation>
+    <intervention_model>Factorial Assignment</intervention_model>
+    <intervention_model_description>There were three study groups: 1. The control group: Participants in this group received only conventional physiotherapy treatment. 2. The shoulder mobilization group: Participants in this group received conventional physiotherapy and shoulder joint mobilization techniques as treatment. The Proprioceptive Neuromuscular Facilitation (PNF) group. Participants in this group received conventional physiotherapy and PNF exercises as treatment.</intervention_model_description>
+    <primary_purpose>Treatment</primary_purpose>
+    <masking>Single (Participant)</masking>
+    <masking_description>Participants did not know which treatment group they were in.</masking_description>
+  </study_design_info>
+  <primary_outcome>
+    <measure>Shoulder pain: VAS</measure>
+    <time_frame>Change from baseline pain scale of shoulder at week 2, 4 and 16.</time_frame>
+    <description>Pain was defined with Visual Analog Scale (VAS). A 10-cm long horizontal visual analog scale (VAS) with marks 0 point (no pain) and 10 point (unbearable pain) was used for evaluating the pain severity. The patients were asked to mark the representing point of their pain levels. The values were recorded in cm. The pain severity was asked in three occasions as: at resting (VASr), during activity (VASa) and during night (VASn).</description>
+  </primary_outcome>
+  <primary_outcome>
+    <measure>Disability of the shoulder</measure>
+    <time_frame>Change from baseline Disabilities of the Arm, Shoulder and Hand (DASH) Score at week 2, 4 and 16.</time_frame>
+    <description>The Disabilities of the Arm, Shoulder and Hand (DASH) Score was used to evaluate the upper extremity physical function. DASH includes two modules as disability / symptom section and work section. The scores are ranged between 0-100. Higher scores indicate lower functionality.</description>
+  </primary_outcome>
+  <primary_outcome>
+    <measure>Function of the shoulder</measure>
+    <time_frame>Change from baseline Constant-Murley score at week 2, 4 and 16.</time_frame>
+    <description>In addition to DASH, the Constant-Murley score was used to evaluate the functionality of the shoulder. Constant-Murley score is a 100-point scoring system and consisted of four sub-scores as pain (15 points), daily living activities (20 points), active range of motion (40 points), and muscle strength (25 points).</description>
+  </primary_outcome>
+  <primary_outcome>
+    <measure>Range of motion</measure>
+    <time_frame>Change from baseline active range of motion at week 2, 4 and 16.</time_frame>
+    <description>The active range of motion was assessed by using a universal goniometer.</description>
+  </primary_outcome>
+  <primary_outcome>
+    <measure>Muscle Strength</measure>
+    <time_frame>Change from baseline muscle strength of shoulder flexion, shoulder abduction, shoulder adduction, shoulder external rotation, and shoulder internal rotation at week 2, 4 and 16.</time_frame>
+    <description>The muscle strength of shoulder flexion, shoulder abduction, shoulder adduction, shoulder external rotation, and shoulder internal rotation were determined by using Baseline Push-Pull (New York, USA) dynamometer. The dynamometer was placed in a 90 degrees angle on the location and the patient was asked to contract in maximum for two seconds and then maintain this position for five seconds. Two assessments were performed, and average values were recorded. Pain was avoided during the measurements.</description>
+  </primary_outcome>
+  <number_of_arms>3</number_of_arms>
+  <enrollment type="Actual">44</enrollment>
+  <condition>Subacromial Impingement</condition>
+  <condition>Subacromial Impingement Syndrome</condition>
+  <arm_group>
+    <arm_group_label>Group I</arm_group_label>
+    <arm_group_type>Experimental</arm_group_type>
+    <description>The control group. Participants in this group received only conventional physiotherapy. Number of the participants were 14.</description>
+  </arm_group>
+  <arm_group>
+    <arm_group_label>Group II</arm_group_label>
+    <arm_group_type>Experimental</arm_group_type>
+    <description>The shoulder mobilization group. Participants in this group received conventional physiotherapy and shoulder joint mobilization techniques. Number of the participants were 15.</description>
+  </arm_group>
+  <arm_group>
+    <arm_group_label>Group III</arm_group_label>
+    <arm_group_type>Experimental</arm_group_type>
+    <description>The Proprioceptive Neuromuscular Facilitation (PNF) group. Participants in this group received conventional physiotherapy and PNF exercises. Number of the participants were 15.</description>
+  </arm_group>
+  <intervention>
+    <intervention_type>Other</intervention_type>
+    <intervention_name>Conventional Physiotherapy</intervention_name>
+    <description>The conventional physiotherapy program consisted of electrotherapy and exercise approaches. The electrotherapy program consisted of infrared (for 15 minutes, from 70 cm distance), conventional Transcutaneous Electrical Nerve Stimulation (TENS) in an encircled region (for 20 minutes; with 4 electrodes, 100 Hz, 100 msec), and therapeutic Ultrasound (for 3 minutes; 1 megahertz (MHz), power: 1,5 W/cm²).
+A physiotherapist supervised exercise program was performed following the electrotherapy program. Elastic resistive exercises were added at the week three. While, the first set of wand exercises and elastic resistive exercises was performed under supervision, two sets of the showed exercises were given as the home exercise program.</description>
+    <arm_group_label>Group I</arm_group_label>
+    <arm_group_label>Group II</arm_group_label>
+    <arm_group_label>Group III</arm_group_label>
+  </intervention>
+  <intervention>
+    <intervention_type>Other</intervention_type>
+    <intervention_name>Shoulder Mobilization</intervention_name>
+    <description>In shoulder mobilization technique while the shoulder joint was placed in the traction, anterior, posterior, and inferior gliding and circumduction were applied to the humerus for 2-3 minutes. All mobilization applications were performed in painless range of motion (ROM) limits. The degree of traction and gliding were increased as the relaxing obtained in the tissues.</description>
+    <arm_group_label>Group II</arm_group_label>
+  </intervention>
+  <intervention>
+    <intervention_type>Other</intervention_type>
+    <intervention_name>Proprioceptive Neuromuscular Facilitation</intervention_name>
+    <description>In the Proprioceptive Neuromuscular Facilitation (PNF) program participants received PNF exercises with contract-relax technique, in the patterns of &quot;flexion-abduction-external rotation&quot;, &quot;extension-adduction-internal rotation&quot;, &quot;flexion-adduction-external rotation&quot; and &quot;extension-abduction-internal rotation&quot; along with the verbal and manual facilitation of the physiotherapist.</description>
+    <arm_group_label>Group III</arm_group_label>
+  </intervention>
+  <eligibility>
+    <criteria>
+      <textblock>
+        Inclusion Criteria:
+
+          -  Aged between 25-65 years old,
+
+          -  Having the diagnosis of Subacromial Impingement Syndrome (SIS),
+
+          -  Having shoulder pain at least for four weeks
+
+        Exclusion Criteria:
+
+          -  Having a neuromuscular disease,
+
+          -  Pregnancy,
+
+          -  History of cancer,
+
+          -  Unstable angina,
+
+          -  Having pulmonary and/or vascular problems,
+
+          -  History of surgery at neck, shoulder, elbow or/and hand,
+
+          -  Having communication problems
+
+          -  Having systemic anti-inflammatory joint diseases
+
+          -  Being contraindicated for electrical stimulation and/or exercise
+
+          -  Having cervical disc herniation or radiculopathy
+
+          -  History of physiotherapy on the same shoulder due to SIS,
+
+          -  A history of corticosteroid injection in the last three months,
+
+          -  Any orthopedic, rheumatologic, or congenital condition that effects the targeted
+             shoulder
+      </textblock>
+    </criteria>
+    <gender>All</gender>
+    <minimum_age>25 Years</minimum_age>
+    <maximum_age>65 Years</maximum_age>
+    <healthy_volunteers>No</healthy_volunteers>
+  </eligibility>
+  <overall_official>
+    <last_name>Tugba Kuru Colak, Asst. Prof.</last_name>
+    <role>Study Director</role>
+    <affiliation>Marmara University Institute of Health Sciences</affiliation>
+  </overall_official>
+  <location>
+    <facility>
+      <name>Sevgi Medical Center</name>
+      <address>
+        <city>Istanbul</city>
+        <state>Arnavutkoy</state>
+        <zip>34275</zip>
+        <country>Turkey</country>
+      </address>
+    </facility>
+  </location>
+  <location_countries>
+    <country>Turkey</country>
+  </location_countries>
+  <reference>
+    <citation>Andrews AW, Thomas MW, Bohannon RW. Normative values for isometric muscle force measurements obtained with hand-held dynamometers. Phys Ther. 1996 Mar;76(3):248-59.</citation>
+    <PMID>8602410</PMID>
+  </reference>
+  <reference>
+    <citation>Aytar A, Baltaci G, Uhl TL, Tuzun H, Oztop P, Karatas M. The effects of scapular mobilization in patients with subacromial impingement syndrome: a randomized, double-blind, placebo-controlled clinical trial. J Sport Rehabil. 2015 May;24(2):116-29. doi: 10.1123/jsr.2013-0120. Epub 2014 Jul 23.</citation>
+    <PMID>25054347</PMID>
+  </reference>
+  <reference>
+    <citation>Bandholm T, Rasmussen L, Aagaard P, Jensen BR, Diederichsen L. Force steadiness, muscle activity, and maximal muscle strength in subjects with subacromial impingement syndrome. Muscle Nerve. 2006 Nov;34(5):631-9.</citation>
+    <PMID>16921511</PMID>
+  </reference>
+  <reference>
+    <citation>Bang MD, Deyle GD. Comparison of supervised exercise with and without manual physical therapy for patients with shoulder impingement syndrome. J Orthop Sports Phys Ther. 2000 Mar;30(3):126-37.</citation>
+    <PMID>10721508</PMID>
+  </reference>
+  <reference>
+    <citation>Bennell K, Wee E, Coburn S, Green S, Harris A, Staples M, Forbes A, Buchbinder R. Efficacy of standardised manual therapy and home exercise programme for chronic rotator cuff disease: randomised placebo controlled trial. BMJ. 2010 Jun 8;340:c2756. doi: 10.1136/bmj.c2756.</citation>
+    <PMID>20530557</PMID>
+  </reference>
+  <reference>
+    <citation>Bicer A, Ankarali H. Shoulder pain and disability index: a validation study in Turkish women. Singapore Med J. 2010 Nov;51(11):865-70.</citation>
+    <PMID>21140113</PMID>
+  </reference>
+  <reference>
+    <citation>Çelik D. Turkish version of the modified Constant-Murley score and standardized test protocol: reliability and validity. Acta Orthop Traumatol Turc. 2016;50(1):69-75. doi: 10.3944/AOTT.2016.14.0354.</citation>
+    <PMID>26854052</PMID>
+  </reference>
+  <reference>
+    <citation>Celik D, Atalar AC, Sahinkaya S, Demirhan M. [The value of intermittent ultrasound treatment in subacromial impingement syndrome]. Acta Orthop Traumatol Turc. 2009 May-Jul;43(3):243-7. doi: 10.3944/AOTT.2009.243. Turkish.</citation>
+    <PMID>19717942</PMID>
+  </reference>
+  <reference>
+    <citation>de Witte PB, Nagels J, van Arkel ER, Visser CP, Nelissen RG, de Groot JH. Study protocol subacromial impingement syndrome: the identification of pathophysiologic mechanisms (SISTIM). BMC Musculoskelet Disord. 2011 Dec 14;12:282. doi: 10.1186/1471-2474-12-282.</citation>
+    <PMID>22168667</PMID>
+  </reference>
+  <reference>
+    <citation>Delgado-Gil JA, Prado-Robles E, Rodrigues-de-Souza DP, Cleland JA, Fernández-de-las-Peñas C, Alburquerque-Sendín F. Effects of mobilization with movement on pain and range of motion in patients with unilateral shoulder impingement syndrome: a randomized controlled trial. J Manipulative Physiol Ther. 2015 May;38(4):245-52. doi: 10.1016/j.jmpt.2014.12.008. Epub 2015 Apr 30.</citation>
+    <PMID>25936465</PMID>
+  </reference>
+  <reference>
+    <citation>Haik MN, Alburquerque-Sendín F, Moreira RF, Pires ED, Camargo PR. Effectiveness of physical therapy treatment of clearly defined subacromial pain: a systematic review of randomised controlled trials. Br J Sports Med. 2016 Sep;50(18):1124-34. doi: 10.1136/bjsports-2015-095771. Epub 2016 Jun 10. Review.</citation>
+    <PMID>27288517</PMID>
+  </reference>
+  <reference>
+    <citation>Kim JJ, Lee SY, Ha K. The effects of exercise using PNF in patients with a supraspinatus muscle tear. J Phys Ther Sci. 2015 Aug;27(8):2443-6. doi: 10.1589/jpts.27.2443. Epub 2015 Aug 21.</citation>
+    <PMID>26356542</PMID>
+  </reference>
+  <reference>
+    <citation>Lazaro R. Shoulder impingement syndromes: implications on physical therapy examination and intervention. J Jpn Phys Ther Assoc. 2005;8(1):1-7. doi: 10.1298/jjpta.8.1. Review.</citation>
+    <PMID>25792938</PMID>
+  </reference>
+  <reference>
+    <citation>Lombardi I Jr, Magri AG, Fleury AM, Da Silva AC, Natour J. Progressive resistance training in patients with shoulder impingement syndrome: a randomized controlled trial. Arthritis Rheum. 2008 May 15;59(5):615-22. doi: 10.1002/art.23576.</citation>
+    <PMID>18438933</PMID>
+  </reference>
+  <reference>
+    <citation>Michener LA, McClure PW, Karduna AR. Anatomical and biomechanical mechanisms of subacromial impingement syndrome. Clin Biomech (Bristol, Avon). 2003 Jun;18(5):369-79. Review.</citation>
+    <PMID>12763431</PMID>
+  </reference>
+  <reference>
+    <citation>Millar AL, Lasheway PA, Eaton W, Christensen F. A retrospective, descriptive study of shoulder outcomes in outpatient physical therapy. J Orthop Sports Phys Ther. 2006 Jun;36(6):403-14.</citation>
+    <PMID>16776489</PMID>
+  </reference>
+  <reference>
+    <citation>Olędzka M, Jaczewska-Bogacka J. Effectiveness of Proprioceptive Neuromuscular Facilitation (PNF) in Improving Shoulder Range of Motion. A Pilot Study. Ortop Traumatol Rehabil. 2017 May 10;19(3):285-292.</citation>
+    <PMID>29086753</PMID>
+  </reference>
+  <reference>
+    <citation>Pappas AM, Zawacki RM, McCarthy CF. Rehabilitation of the pitching shoulder. Am J Sports Med. 1985 Jul-Aug;13(4):223-35.</citation>
+    <PMID>4025674</PMID>
+  </reference>
+  <reference>
+    <citation>Cardoso de Souza M, Trajano Jorge R, Jones A, Lombardi Júnior I, Natour J. Progressive resistance training in patients with shoulder impingement syndrome: literature review. Reumatismo. 2009 Apr-Jun;61(2):84-9. Review.</citation>
+    <PMID>19633794</PMID>
+  </reference>
+  <reference>
+    <citation>Senbursa G, Baltaci G, Atay A. Comparison of conservative treatment with and without manual physical therapy for patients with shoulder impingement syndrome: a prospective, randomized clinical trial. Knee Surg Sports Traumatol Arthrosc. 2007 Jul;15(7):915-21. Epub 2007 Feb 28.</citation>
+    <PMID>17333123</PMID>
+  </reference>
+  <reference>
+    <citation>Warner JJ, Micheli LJ, Arslanian LE, Kennedy J, Kennedy R. Patterns of flexibility, laxity, and strength in normal shoulders and shoulders with instability and impingement. Am J Sports Med. 1990 Jul-Aug;18(4):366-75.</citation>
+    <PMID>2403184</PMID>
+  </reference>
+  <verification_date>November 2018</verification_date>
+  <!-- For several months we've had both old and new date name tags                             -->
+  <!-- Now, the old date names have been dropped.                                               -->
+  <!-- The new date name replacements are:                                                      -->
+  <!--     OLD (gone)                                        NEW (in use)                       -->
+  <!--   lastchanged_date                         becomes   last_update_submitted               -->
+  <!--   firstreceived_date                       becomes   study_first_submitted               -->
+  <!--   firstreceived_results_date               becomes   results_first_submitted             -->
+  <!--   firstreceived_results_disposition_date   becomes   disposition_first_submitted         -->
+  <study_first_submitted>November 2, 2018</study_first_submitted>
+  <study_first_submitted_qc>November 7, 2018</study_first_submitted_qc>
+  <study_first_posted type="Actual">November 8, 2018</study_first_posted>
+  <last_update_submitted>November 7, 2018</last_update_submitted>
+  <last_update_submitted_qc>November 7, 2018</last_update_submitted_qc>
+  <last_update_posted type="Actual">November 8, 2018</last_update_posted>
+  <responsible_party>
+    <responsible_party_type>Sponsor</responsible_party_type>
+  </responsible_party>
+  <keyword>proprioceptive neuromuscular facilitation</keyword>
+  <keyword>functionality</keyword>
+  <keyword>mobilization</keyword>
+  <keyword>pnf</keyword>
+  <condition_browse>
+    <!-- CAUTION:  The following MeSH terms are assigned with an imperfect algorithm            -->
+    <mesh_term>Syndrome</mesh_term>
+    <mesh_term>Rotator Cuff Injuries</mesh_term>
+    <mesh_term>Shoulder Impingement Syndrome</mesh_term>
+  </condition_browse>
+  <patient_data>
+    <sharing_ipd>Undecided</sharing_ipd>
+    <ipd_description>Study Protocol, Statistical Analysis Plan (SAP), Informed Consent Form (ICF), Clinical Study Report (CSR) might be considered to be shared with clinicians studying in the same field one year after the publication of the study.</ipd_description>
+  </patient_data>
+  <!-- Results have not yet been posted for this study                                          -->
+</clinical_study>
