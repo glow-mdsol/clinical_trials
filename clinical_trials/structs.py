@@ -342,6 +342,7 @@ class StudyArm(CTStruct):
     <xs:element name="arm_group_type" type="xs:string" minOccurs="0"/>
     <xs:element name="description" type="xs:string" minOccurs="0"/>
     """
+
     def __init__(self, arm_group_label=None, arm_group_type=None, description=None):
         self.arm_group_label = arm_group_label
         self.arm_group_type = arm_group_type
@@ -380,7 +381,7 @@ class VariableDateStruct(CTStruct):
     @property
     def date(self):
         """
-        "(Unknown|((January|February|March|April|May|June|July|August|September|October|November|December) (([12]?[0-9]|30|31)\, )?[12][0-9]{3}))"
+        Parses a date according to the schema format
         :return:
         """
         if self.raw_date_str == "Unknown":
@@ -407,6 +408,7 @@ class StudyDocument(CTStruct):
     <xs:element name="doc_url" type="xs:string" minOccurs="0"/>
     <xs:element name="doc_comment" type="xs:string" minOccurs="0"/>
     """
+
     def __init__(self, doc_id=None, doc_type=None, doc_url=None, doc_comment=None):
         self.doc_id = doc_id
         self.doc_type = doc_type

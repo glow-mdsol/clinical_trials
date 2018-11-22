@@ -528,7 +528,7 @@ class ClinicalStudy:
         schema = get_schema()
         content = get_study(nct_id)
         has_results = b"Results are available for this study" in content
-        return cls(schema.to_dict(content), has_results)
+        return cls(schema.to_dict(content.decode("utf-8")), has_results)
 
     @classmethod
     def from_file(cls, filename, local_schema=False):
@@ -540,6 +540,6 @@ class ClinicalStudy:
             with open(filename, "rb") as fh:
                 content = fh.read()
             has_results = b"Results are available for this study" in content
-            return cls(schema.to_dict(content), has_results)
+            return cls(schema.to_dict(content.decode("utf-8")), has_results)
         else:
             raise ValueError("File {} not found".format(filename))

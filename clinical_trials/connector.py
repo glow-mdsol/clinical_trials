@@ -1,7 +1,7 @@
-from abc import ABC
 
 from six.moves.urllib.parse import urlencode, urljoin
 from six.moves.html_parser import HTMLParser
+
 import requests
 
 
@@ -22,13 +22,13 @@ def get_study(nct_id):
     return response.content
 
 
-class ClinicalTrialsHtmlParser(HTMLParser, ABC):
+class ClinicalTrialsHtmlParser(HTMLParser):
     """
     Pluck out the Documents
     TODO: Get results?
     """
     def __init__(self):
-        super().__init__()
+        super(ClinicalTrialsHtmlParser, self).__init__()
         self.docs = {}
 
     def handle_starttag(self, tag, attrs):
