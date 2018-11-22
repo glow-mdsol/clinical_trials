@@ -3,8 +3,25 @@ import unittest
 from mock import mock
 
 from clinical_trials.clinical_study import ClinicalStudy
-from clinical_trials.helpers import process_eligibility
+from clinical_trials.helpers import process_eligibility, yes_no_enum
 from tests.test_clinical_study import SchemaTestCase
+
+
+class TestYesNoEnum(SchemaTestCase):
+
+    def test_yes(self):
+        self.assertTrue(yes_no_enum("Yes"))
+
+    def test_no(self):
+        self.assertFalse(yes_no_enum("No"))
+
+    def test_none(self):
+        self.assertFalse(yes_no_enum(None))
+
+    def test_wacky(self):
+        with self.assertRaises(ValueError) as exc:
+            yes_no_enum(1)
+        self.assertEqual(str(exc.exception), "Unable to process value of type <class 'int'>")
 
 
 class TestEligibility(SchemaTestCase):
