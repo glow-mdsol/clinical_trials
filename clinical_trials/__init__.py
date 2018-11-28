@@ -1,5 +1,10 @@
-SCHEMA_VERSION = "05/09/2018"
+import logging
 
-__version__ = "0.1"
+SCHEMA_VERSION = "08/22/2018"
+
+__version__ = "0.2"
+
+logging.basicConfig()
+logger = logging.getLogger(__name__)
 
 from .clinical_study import ClinicalStudy

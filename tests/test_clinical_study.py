@@ -5,7 +5,8 @@ import os
 
 from mock import mock
 from xmlschema import XMLSchema
-from clinical_trials.clinical_study import ClinicalStudy, StudyArm
+from clinical_trials.clinical_study import ClinicalStudy
+from clinical_trials.structs import StudyArm
 
 SCHEMA_LOCATION = os.path.join(os.path.dirname(__file__), '..', 'doc', 'schema', 'public.xsd')
 
@@ -48,6 +49,10 @@ class TestSponsor(SchemaTestCase):
         sponsor = study.sponsor
         self.assertEqual('Daiichi Sankyo, Inc.', sponsor.get('agency'))
 
+    def test_source(self):
+        study = self.get_study('NCT01565668')
+        self.assertEqual('Daiichi Sankyo, Inc.', study.source)
+
     def test_collaborator(self):
         """
         get Study collaborators
@@ -80,6 +85,27 @@ class TestInfo(SchemaTestCase):
     def test_nct_id(self):
         study = self.get_study('NCT01565668')
         self.assertEqual('NCT01565668', study.nct_id)
+
+    def test_acronym_no_acronym(self):
+        study = self.get_study('NCT01565668')
+        self.assertIsNone(study.acronym)
+
+    def test_acronym_with_acronym(self):
+        study = self.get_study('NCT02536534')
+        self.assertEqual('e-MOTION PH', study.acronym)
+
+
+class TestResults(SchemaTestCase):
+
+    def test_has_results(self):
+        study_id = "NCT00985114"
+        study = self.get_study(study_id)
+        self.assertTrue(study.has_results)
+
+    def test_no_has_results(self):
+        study_id = "NCT01565668"
+        study = self.get_study(study_id)
+        self.assertFalse(study.has_results)
 
 
 class TestGetPeople(SchemaTestCase):
@@ -236,6 +262,15 @@ class TestEligibility(SchemaTestCase):
         self.assertEqual(4, len(exclusion))
 
 
+class TestBiospec(SchemaTestCase):
+
+    def test_biospec_retention(self):
+        study_id = "NCT03708289"
+        study = self.get_study(study_id)
+        self.assertEqual("Samples Without DNA", study.biospec_retention)
+        self.assertEqual("blood and urine samples", study.biospec_description)
+
+
 class TestArmGroup(SchemaTestCase):
 
     def test_loads_all_arms(self):
@@ -251,6 +286,17 @@ class TestArmGroup(SchemaTestCase):
                 self.assertEqual('Active Comparator', arm.arm_group_type)
             else:
                 self.assertEqual('Experimental', arm.arm_group_type)
+
+    def test_number_of_arms(self):
+        study = self.get_study('NCT02348489')
+        arms = study.arms
+        self.assertEqual(2, len(arms))
+        self.assertEqual(2, study.number_of_arms)
+
+    def test_number_of_groups(self):
+        study = self.get_study('NCT03211546')
+        arms = study.arms
+        self.assertEqual(1, study.number_of_groups)
 
 
 class TestInterventions(SchemaTestCase):
@@ -340,6 +386,123 @@ class TestStudyStatus(SchemaTestCase):
                     dink.return_value = self.cache.get(study_id)
                     study = ClinicalStudy.from_nctid(study_id)
                     self.assertEqual(study.last_known_status, overall_status)
+
+    def test_terminated_status(self):
+        study_id = "NCT03708289"
+        study = self.get_study(study_id)
+        expected = "Terminated"
+        self.assertEqual(study.status, expected)
+
+
+class TestSummary(SchemaTestCase):
+
+    def test_brief_summary(self):
+        study_id = 'NCT02348489'
+        study = self.get_study(study_id)
+        expected = "To compare efficacy and safety between SGI-110 and Treatment Choice in adults with previously " \
+                   "untreated AML who are not considered candidates for intensive remission induction chemotherapy."
+        self.assertEqual(study.brief_summary, expected)
+
+
+class TestHasExpandedAccess(SchemaTestCase):
+
+    def test_study_with_expanded_access(self):
+        study_id = 'NCT03357471'
+        study = self.get_study(study_id)
+        expected = True
+        self.assertEqual(study.has_expanded_access, expected)
+
+    def test_study_without_expanded_access(self):
+        study_id = 'NCT02348489'
+        study = self.get_study(study_id)
+        expected = False
+        self.assertEqual(study.has_expanded_access, expected)
+
+
+class TestHasStudyDocuments(SchemaTestCase):
+
+    def test_no_study_documents(self):
+        with mock.patch("clinical_trials.clinical_study.get_study_documents") as ms:
+            ms.return_value = {}
+            study_id = 'NCT02348489'
+            study = self.get_study(study_id)
+            self.assertEqual([], study.study_documents)
+            self.assertFalse(study.has_study_documents)
+
+    def test_with_study_documents(self):
+        with mock.patch("clinical_trials.clinical_study.get_study_documents") as ms:
+            study_id = 'NCT02348489'
+            study = self.get_study(study_id)
+            ms.return_value = {"Study Protocol": "/ProvidedDocs/43/NCT03741543/Prot_000.pdf"}
+            study_doc = study.study_documents[0]
+            self.assertEqual("Study Protocol", study_doc.doc_type)
+            self.assertEqual("/ProvidedDocs/43/NCT03741543/Prot_000.pdf", study_doc.doc_url)
+            self.assertEqual("43_NCT03741543_Prot_000.pdf", study_doc.doc_id)
+            self.assertEqual("Retrieved from clinicaltrials.gov manually", study_doc.doc_comment)
+            self.assertTrue(study.has_study_documents)
+
+
+class TestTargetDuration(SchemaTestCase):
+
+    def test_duration(self):
+        study_id = "NCT03211546"
+        study = self.get_study(study_id)
+        self.assertEqual("24 Months", study.target_duration)
+
+
+class TestStudyDesignInfo(SchemaTestCase):
+
+    def test_partial_data(self):
+        study_id = "NCT03708289"
+        study = self.get_study(study_id)
+        self.assertEqual("Cohort", study.study_design.observational_model)
+        self.assertEqual("Prospective", study.study_design.time_perspective)
+
+    def test_more_partial_data(self):
+        study_id = "NCT03357471"
+        study = self.get_study(study_id)
+        self.assertEqual("Non-Randomized", study.study_design.allocation)
+        self.assertEqual("Parallel Assignment", study.study_design.intervention_model)
+        self.assertEqual("None (Open Label)", study.study_design.masking)
+
+
+class TestExpandedAccessInfo(SchemaTestCase):
+
+    def test_expanded_access_info_where_present(self):
+        study_id = "NCT03642691"
+        study = self.get_study(study_id)
+        expanded_access_info = study.expanded_access_info
+        self.assertTrue(expanded_access_info.individual)
+        self.assertTrue(expanded_access_info.intermediate)
+        self.assertTrue(expanded_access_info.treatment)
+
+    def test_partial_expanded_access_info(self):
+        study_id = "NCT03723057"
+        study = self.get_study(study_id)
+        expanded_access_info = study.expanded_access_info
+        self.assertTrue(expanded_access_info.individual)
+        self.assertFalse(expanded_access_info.intermediate)
+        self.assertFalse(expanded_access_info.treatment)
+
+    def test_expanded_access_info_where_missing(self):
+        study_id = 'NCT02348489'
+        study = self.get_study(study_id)
+        self.assertIsNone(study.expanded_access_info)
+
+
+class TestWhyStopped(SchemaTestCase):
+
+    def test_why_stopped_where_present(self):
+        study_id = "NCT03708289"
+        study = self.get_study(study_id)
+        expected = "recruitment slower than expected"
+        self.assertEqual(study.why_stopped, expected)
+
+    def test_why_stopped_where_missing(self):
+        study_id = "NCT02348489"
+        study = self.get_study(study_id)
+        expected = "N/A"
+        self.assertEqual(study.why_stopped, expected)
 
 
 class TestStudyTrail(SchemaTestCase):
@@ -494,6 +657,12 @@ class TestOutcomes(SchemaTestCase):
         self.assertEqual(len(study.outcomes.primary), 2)
         self.assertEqual(len(study.outcomes.secondary), 8)
         self.assertEqual(len(study.outcomes.other), 0)
+
+    def test_enrollment_668_outcomes(self):
+        study_id = 'NCT01565668'
+        study = self.get_study(study_id)
+        self.assertEqual(study.outcomes.primary[0].outcome_type, "primary")
+        self.assertEqual(study.outcomes.secondary[0].outcome_type, "secondary")
 
 
 class TestVerificationDate(SchemaTestCase):

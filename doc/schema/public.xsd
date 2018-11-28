@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<!-- ============================================================================================ 
+<!-- ============================================================================================
 
   XML Schema for ClinicalTrials.gov public XML
   http://clinicaltrials.gov/ct2/html/images/info/public.xsd
   National Library of Medicine, National Institutes of Health
-  Version: 2017.02.13
+  Version: 2018.08.22
 
   Change History for schema:
   12/13/2011 Initial Version
@@ -18,7 +18,7 @@
              Holds population description
              Matches population tag in outcome measure
   07/15/2013 In clinical_results, marked several tags as optional
-  07/15/2013 In clinical_results, added optional comment as text of measurements 
+  07/15/2013 In clinical_results, added optional comment as text of measurements
              tag - used to be just attributes with no text
   03/27/2014 Added optional target_duration
   06/05/2015 Added data type restrictions and key/keyref constraints to better
@@ -27,103 +27,103 @@
   06/30/2016 Added structured data under patient_data tag
   06/30/2016 Added structured data under study_docs tag
   06/30/2016 Added firstreceived_results_disposition_date tag
-  
+
   11/24/2016 Added last_known_status tag and a new allowed value for overall_status
              If a study is open (overall status of recruiting, not yet recruiting, or expanded
-             access available), the overall status is supposed to be verified occasionally, and 
-             updated when it changes.  If the status has not been verified in 2 years, and the 
-             current date is past the study primary completion date or completion date, then the 
-             status is inconsistent.  In this case, the inconsistent value is kept in the new 
+             access available), the overall status is supposed to be verified occasionally, and
+             updated when it changes.  If the status has not been verified in 2 years, and the
+             current date is past the study primary completion date or completion date, then the
+             status is inconsistent.  In this case, the inconsistent value is kept in the new
              last_known_status tag and the overall_status tag is changed to "Unknown status".
-             
-  12/02/2016 Changes in results structure to enhance baseline and outcome measures 
-             
+
+  12/02/2016 Changes in results structure to enhance baseline and outcome measures
+
              Category tags now imply categorical variables with mutually exclusive values.
              Categories are now contained in new class tags, which are not mutually exclusive.
              Obese/Smoker are example classes. Male/Female are example categories.
-             Although it is possible to have multiple classes containing multiple categories,  
-             in practice there is usually either 1) one unnamed class containing multiple named 
+             Although it is possible to have multiple classes containing multiple categories,
+             in practice there is usually either 1) one unnamed class containing multiple named
              categories or 2) multiple named classes, each containing one unnamed category.
-             
+
              Baseline measures have been expanded to describe measures of non-participant units.
-             Fingers/Lesions are example units.  Info about the participants/units has been broken   
-             out into analyzed tags.  The analyzed structure contains a units tag, scope tag, and 
-             list of count tags.  
-             
-             If non-participant units exist, each baseline measure will have a units_analyzed tag 
+             Fingers/Lesions are example units.  Info about the participants/units has been broken
+             out into analyzed tags.  The analyzed structure contains a units tag, scope tag, and
+             list of count tags.
+
+             If non-participant units exist, each baseline measure will have a units_analyzed tag
              that selects which was analyzed, participants or units.
-             
+
              Overall counts of participants/units are given for all baseline measures.  These
              counts can be overridden by the presence of an analyzed tag in an individual measure,
              or even in an individual class.  Example: measure six minute walk test, classes
-             include obese with categories of male/female.  To get male/female percentages, you 
+             include obese with categories of male/female.  To get male/female percentages, you
              need the number of participants in the obese class.  To get obese percentage, you
-             need the number of participants completing the walk test.  Either of these numbers can 
+             need the number of participants completing the walk test.  Either of these numbers can
              differ from the overall number of participants, and now there is a way to define them.
-             
+
              Outcome measures have been adjusted to be consistent with baseline measures
-                         
+
              Outcome measures used to show counts of participants/units as separate measures.
              Now that they have been moved to analyzed tags, there is only one measure and no
              need for a measure_list tag.
-             
-             More changes are expected in the beginning of 2017 due to implementation of 
+
+             More changes are expected in the beginning of 2017 due to implementation of
              final rules for FDAAA 801.
-             
-  01/11/2017 Dates will optionally include a day, especially those that are used to calculate deadlines 
+
+  01/11/2017 Dates will optionally include a day, especially those that are used to calculate deadlines
              Start dates will optionally include a type attribute of Actual or Anticipated
-             
-             Added 5 new Yes/No flags to <oversight_info>: <is_fda_regulated_drug>, 
+
+             Added 5 new Yes/No flags to <oversight_info>: <is_fda_regulated_drug>,
              <is_fda_regulated_device>, <is_unapproved_device>, <is_ppsd>, and <is_us_export>.
 
-             Removed <authority> tags from <oversight_info>.  
-             This field is no longer collected and legacy data abandoned 
+             Removed <authority> tags from <oversight_info>.
+             This field is no longer collected and legacy data abandoned
 
              Removed <is_fda_regulated> and <is_section_801> tags. Obsolete and abandoned.
 
-             Created <expanded_access_info> section to hold 3 new protocol Yes/No flags: 
-             <expanded_access_type_individual>, <expanded_access_type_intermediate>, and 
+             Created <expanded_access_info> section to hold 3 new protocol Yes/No flags:
+             <expanded_access_type_individual>, <expanded_access_type_intermediate>, and
              <expanded_access_type_treatment>.  These flags only appear on records with study
              type, "Expanded Access"
 
-             Study design has changed from a comma delimited list in a string into structured data.  
-             A new <study_design_info> section contains the following new tags: <allocation>, 
-             <intervention_model>, <intervention_model_description>, <primary_purpose>, 
-             <time_perspective>, <masking>, and <masking_description>.  
-             
-             Removed endpoint classification data from study design.
-             This field is no longer collected and legacy data abandoned 
+             Study design has changed from a comma delimited list in a string into structured data.
+             A new <study_design_info> section contains the following new tags: <allocation>,
+             <intervention_model>, <intervention_model_description>, <primary_purpose>,
+             <time_perspective>, <masking>, and <masking_description>.
 
-             By default, the <gender> tag indicates patients' biolgical sex and has values Male, 
-             Female, or All (which replaces Both).  The Yes/No tag <gender_based> and discussion 
-             <gender_description> indicate and explain any distinctions between patient gender 
+             Removed endpoint classification data from study design.
+             This field is no longer collected and legacy data abandoned
+
+             By default, the <gender> tag indicates patients' biolgical sex and has values Male,
+             Female, or All (which replaces Both).  The Yes/No tag <gender_based> and discussion
+             <gender_description> indicate and explain any distinctions between patient gender
              and biological sex.
-             
-             We replaced the Yes/No tag <non_inferiority> in outcome analysis with a new tag 
-             <non_inferiority_type> which can have additional values.  Also, outcome analysis 
+
+             We replaced the Yes/No tag <non_inferiority> in outcome analysis with a new tag
+             <non_inferiority_type> which can have additional values.  Also, outcome analysis
              has a new tag <other_analysis_desc>
-             
+
              Serious adverse events get another total, all-cause mortality, both <subjects_affected>
              and <subjects_at_risk>.  This is new content, but no new tags
-             
+
              Removed safety issue data from outcome measures in protocol and results.
-             This field is no longer collected and legacy data abandoned 
-             
+             This field is no longer collected and legacy data abandoned
+
              measure_dispersion is no longer an enum.  Data providers can use any confidence
              interval limit they wish
 
-  01/25/2017 Added two additional values for the intervention type enum:  1) Diagnostic test and 
+  01/25/2017 Added two additional values for the intervention type enum:  1) Diagnostic test and
              2) Compound Product
 
   02/08/2017 Corrected intervention type enum:  Compound Product  becomes  Combination Product
   02/13/2017 Corrected phase_enum: "Phase 0" becomes "Early Phase 1"
   05/12/2017 Added "Geometric Least Squares Mean" to measure_param_enum
-  
+
   08/30/2017 Generally, a study is posted before a trial starts.  Results, or a disposition about
              why results are not available, is generally added within a year of trial completion.
-             Often studies are updated when there are changes to recruiting status, site locations,  
-             contact info, etc.  The last update dates refer to the most recent of these chnages.  
-  
+             Often studies are updated when there are changes to recruiting status, site locations,
+             contact info, etc.  The last update dates refer to the most recent of these chnages.
+
              New dates are being added:
                <study_first_submitted>
                <study_first_submitted_qc>
@@ -137,33 +137,33 @@
                <last_update_submitted>
                <last_update_submitted_qc>
                <last_update_posted>
-               
+
              The _submitted suffix indicates the date that the responsible party pressed the release
-             button in the ClinicalTrials.gov data submission system, thereby submitting the data 
+             button in the ClinicalTrials.gov data submission system, thereby submitting the data
              for review prior to posting.
 
-             The _submitted_qc suffix indicates the submission date of the version of the record that 
-             met quality control criteria.  It is common for there to be revisions between the first 
+             The _submitted_qc suffix indicates the submission date of the version of the record that
+             met quality control criteria.  It is common for there to be revisions between the first
              submission and the submission that meets qc criteria.  Note this is not the date that the
              qc review was completed.
-             
+
              The _posted suffix indicates the date that a submission was made public on ClinicalTrials.gov.
              Typically, posting occurs the business day after qc review was successfully completed.
-             We began collecting posted dates in early 2017.  Dates from before then are estmates.  All 
+             We began collecting posted dates in early 2017.  Dates from before then are estmates.  All
              posted dates include a type attribute of Actual or Estimate.
-             
-             Some existing dates are now redundant.  They will be kept for some time to provide an 
-             opportunity for users of the XML to update their systems before being removed at a later 
-             date, probably in 2018.  
+
+             Some existing dates are now redundant.  They will be kept for some time to provide an
+             opportunity for users of the XML to update their systems before being removed at a later
+             date, probably in 2018.
 
              Please update systems to stop using the date on the left in favor of the date on the right.
                <firstreceived_date>                       replaced with   <study_first_submitted>
                <firstreceived_results_date>               replaced with   <results_first_submitted>
                <firstreceived_results_disposition_date>   replaced with   <disposition_first_submitted>
-               <lastchanged_date>                         replaced with   <last_update_submitted>  
-             
+               <lastchanged_date>                         replaced with   <last_update_submitted>
+
              From a utility standpoint, the new <last_update_posted> date is likely the date that most
-             people want to search.  We previously did not have this date available and the old 
+             people want to search.  We previously did not have this date available and the old
              <lastchanged_date> was the closest alternative, though problematic because it never meant
              what was implied by the name.
 
@@ -173,48 +173,51 @@
              All studies which are not study type Interventional (e.g. Observational and Expanded Access)
                have had their Phase removed.
 
-  03/29/2018 Lead Sponsors and Collaborators can have a missing agency_class. 
+  03/29/2018 Lead Sponsors and Collaborators can have a missing agency_class.
              This should only occur for unapproved device trials where most fields are mssing or redacted.
-  
-  05/03/2018 As promised in 08/30/2017 entry above, old redundant date names have been retired and 
-             their tags removed.  Please update systems to stop using the date on the left in favor 
+
+  05/03/2018 As promised in 08/30/2017 entry above, old redundant date names have been retired and
+             their tags removed.  Please update systems to stop using the date on the left in favor
              of the date on the right.
                <firstreceived_date>                       replaced with   <study_first_submitted>
                <firstreceived_results_date>               replaced with   <results_first_submitted>
                <firstreceived_results_disposition_date>   replaced with   <disposition_first_submitted>
-               <lastchanged_date>                         replaced with   <last_update_submitted>  
-             
+               <lastchanged_date>                         replaced with   <last_update_submitted>
+
   05/09/2018 Added new section <pending_results> that appears only when the data provider has
              submitted study results for quality control (QC) review, but those results have
-             not yet been publicly posted.  Within the pending results 
+             not yet been publicly posted.  Within the pending results
              sections are three possible tags, all of which hold a date value
                <submitted>             Date study results are submitted for QC review
                <returned>              Date study results are returned for modification
                <submission_canceled>   Date submission canceled by data provider
              The <submission_canceled> tag will contain the string "Unknown" for cancel events
              before 05/08/2018 (start of date collection).
-               
-             Once quality control review is passed, 1) the first <submitted> date is used to fill the 
-             <results_first_submitted> tag, 2) the <submitted> date for the version of results that 
-             passed QC is used to fill the <results_first_submitted_qc> tag, 3) the <pending_results> 
-             section is removed, and 4) the results are posted on ClinicalTrials.gov. 
-             
-             The latest versions of all studies are posted every business day.  But, there can be 
-             unexpected delays.  The <results_first_posted> value will usually have a type attribute 
-             of "Estimate" when first posted.  This attribute will be changed to "Actual" (and the 
+
+             Once quality control review is passed, 1) the first <submitted> date is used to fill the
+             <results_first_submitted> tag, 2) the <submitted> date for the version of results that
+             passed QC is used to fill the <results_first_submitted_qc> tag, 3) the <pending_results>
+             section is removed, and 4) the results are posted on ClinicalTrials.gov.
+
+             The latest versions of all studies are posted every business day.  But, there can be
+             unexpected delays.  The <results_first_posted> value will usually have a type attribute
+             of "Estimate" when first posted.  This attribute will be changed to "Actual" (and the
              date may be adjusted) on the next posting cycle, when the true posting date is known.
-             
+
+  08/22/2018 Added four additional patient data fields, <ipd_info_type>, <ipd_time_frame>,
+             <ipd_access_criteria>, and <ipd_url>, to the <patient_data> tag
+
  ============================================================================================ -->
 
 <!--
-  Note: information on some device trials cannot be provided by ClinicalTrials.gov. 
+  Note: information on some device trials cannot be provided by ClinicalTrials.gov.
   The public site displays the following disclaimer for such trials:
-  
+
     This trial has been identified as being associated with a clinical device
     that has not been approved or cleared by the US Food and Drug
     Administration. Under the terms of US Public Law 110-85, Title VIII,
-    Section 801, the details of this study are not available to the public. 
-  
+    Section 801, the details of this study are not available to the public.
+
   The XML for such trials will contain very little usable information. These
   trials (and only these trials) will have the study_type set to "N/A".
 -->
@@ -230,14 +233,14 @@
       <xs:enumeration value="Estimate" />
     </xs:restriction>
   </xs:simpleType>
-  
+
   <xs:simpleType name="yes_no_enum">
     <xs:restriction base="xs:string">
       <xs:enumeration value="Yes" />
       <xs:enumeration value="No" />
     </xs:restriction>
   </xs:simpleType>
-  
+
   <xs:simpleType name="recruitment_status_enum">
     <xs:restriction base="xs:string">
       <xs:enumeration value="Active, not recruiting" />
@@ -250,13 +253,13 @@
       <xs:enumeration value="Withdrawn" />
     </xs:restriction>
   </xs:simpleType>
-  
+
 <!-- === Date ======================================================== -->
 
   <!--  Dates may now include a day                  -->
   <!--      Month Day, Year    Or    Month Year      -->
   <!--  Necessary to accurately calculate deadlines  -->
-  
+
   <xs:simpleType name="variable_date_type">
     <xs:restriction base="xs:string">
       <xs:pattern value="(Unknown|((January|February|March|April|May|June|July|August|September|October|November|December) (([12]?[0-9]|30|31)\, )?[12][0-9]{3}))" />
@@ -270,7 +273,7 @@
       </xs:extension>
     </xs:simpleContent>
   </xs:complexType>
-   
+
 <!-- === Required Header ============================================= -->
 
   <xs:complexType name="required_header_struct">
@@ -399,7 +402,7 @@
       <xs:enumeration value="Dietary Supplement" />
       <xs:enumeration value="Drug" />
       <xs:enumeration value="Genetic" />
-      <xs:enumeration value="Procedure" />      
+      <xs:enumeration value="Procedure" />
       <xs:enumeration value="Radiation" />
       <xs:enumeration value="Other" />
     </xs:restriction>
@@ -431,7 +434,7 @@
       <xs:enumeration value="Non-Probability Sample" />
     </xs:restriction>
   </xs:simpleType>
-  
+
   <xs:simpleType name="gender_enum">
     <xs:restriction base="xs:string">
       <xs:enumeration value="Female" />
@@ -439,7 +442,7 @@
       <xs:enumeration value="All" />
     </xs:restriction>
   </xs:simpleType>
-  
+
   <xs:simpleType name="age_pattern">
     <xs:restriction base="xs:string">
       <xs:pattern value="N/A|([1-9][0-9]* (Year|Years|Month|Months|Week|Weeks|Day|Days|Hour|Hours|Minute|Minutes))"></xs:pattern>
@@ -593,6 +596,10 @@
     <xs:sequence>
       <xs:element name="sharing_ipd" type="xs:string"/>
       <xs:element name="ipd_description" type="xs:string" minOccurs="0"/>
+      <xs:element name="ipd_info_type" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="ipd_time_frame" type="xs:string" minOccurs="0"/>
+      <xs:element name="ipd_access_criteria" type="xs:string" minOccurs="0"/>
+      <xs:element name="ipd_url" type="xs:string" minOccurs="0"/>
     </xs:sequence>
   </xs:complexType>
 
@@ -606,7 +613,7 @@
       <xs:element name="doc_comment" type="xs:string" minOccurs="0"/>
     </xs:sequence>
   </xs:complexType>
-  
+
   <xs:complexType name="study_docs_struct">
     <xs:sequence>
       <xs:element name="study_doc" type="study_doc_struct" maxOccurs="unbounded"/>
@@ -783,7 +790,7 @@
   </xs:complexType>
 
 <!-- === Measure ===================================================== -->
-  
+
   <xs:simpleType name="measure_param_enum">
     <xs:restriction base="xs:string">
       <xs:enumeration value="Geometric Mean" />
@@ -935,7 +942,7 @@
       <xs:enumeration value="Post-Hoc" />
     </xs:restriction>
   </xs:simpleType>
-  
+
   <xs:simpleType name="posting_date_type">
     <xs:restriction base="xs:string">
       <xs:pattern value="(((0[1-9])|(10|11|12))/)?[1-3][0-9]{3}"></xs:pattern> <!-- month/year or just year -->
@@ -993,7 +1000,7 @@
   </xs:complexType>
 
 <!-- === Event ======================================================= -->
-  
+
   <xs:simpleType name="event_assessment_enum">
     <xs:restriction base="xs:string">
       <xs:enumeration value="Non-systematic Assessment" />
@@ -1157,19 +1164,19 @@
       <xs:enumeration value="Approved for marketing" />
     </xs:restriction>
   </xs:simpleType>
-  
+
   <xs:simpleType name="redacted_record_status_enum">
     <xs:restriction base="xs:string">
       <xs:enumeration value="Withheld"></xs:enumeration>
     </xs:restriction>
   </xs:simpleType>
-   
+
   <xs:simpleType name="unknown_status_enum">
     <xs:restriction base="xs:string">
       <xs:enumeration value="Unknown status"></xs:enumeration>
     </xs:restriction>
   </xs:simpleType>
-  
+
   <!--
     Valid values for overall status depend on the value for study type:
      - For "Expanded Access", any value from expanded_access_status_enum
@@ -1177,9 +1184,9 @@
      - Otherwise, any value from recruitment_status_enum
    -->
   <xs:simpleType name="overall_status_enum">
-    <xs:union memberTypes="recruitment_status_enum 
-      expanded_access_status_enum 
-      redacted_record_status_enum 
+    <xs:union memberTypes="recruitment_status_enum
+      expanded_access_status_enum
+      redacted_record_status_enum
       unknown_status_enum"></xs:union>
   </xs:simpleType>
 
@@ -1192,7 +1199,7 @@
       <xs:enumeration value="Observational [Patient Registry]" />
     </xs:restriction>
   </xs:simpleType>
-  
+
   <xs:simpleType name="phase_enum">
     <xs:restriction base="xs:string">
       <xs:enumeration value="N/A" />
@@ -1213,7 +1220,7 @@
       <xs:enumeration value="Samples Without DNA" />
     </xs:restriction>
   </xs:simpleType>
-  
+
   <xs:element name="clinical_study">
     <xs:complexType>
       <xs:sequence>

@@ -1,355 +1,35 @@
-import datetime
-import logging
 import os
 
-import six
 from glom import glom
 
-from clinical_trials.connector import get_study
-from clinical_trials.errors import StudyDefinitionInvalid
-from clinical_trials.helpers import process_textblock, process_eligibility
+from clinical_trials.connector import get_study, get_study_documents
+from clinical_trials.helpers import process_textblock, yes_no_enum
 from clinical_trials.schema import get_schema, get_local_schema
-
-logging.basicConfig()
-logger = logging.getLogger(__name__)
-
-
-class CTStruct(object):
-    REQUIRED = ()
-
-    def is_valid(self):
-        for req in self.REQUIRED:
-            if getattr(self, req, None) is None:
-                raise StudyDefinitionInvalid("Missing required attribute {} from {}".format(req,
-                                                                                            self.__class__.__name__))
-
-    @classmethod
-    def from_dict(cls, dict_data):
-        return cls(**dict_data)
-
-
-class OversightInfo(CTStruct):
-    """
-    <xs:element name="has_dmc" type="yes_no_enum" minOccurs="0"/> <!-- data monitoring committee -->
-    <xs:element name="is_fda_regulated_drug" type="yes_no_enum" minOccurs="0"/>
-    <xs:element name="is_fda_regulated_device" type="yes_no_enum" minOccurs="0"/>
-    <xs:element name="is_unapproved_device" type="yes_no_enum" minOccurs="0"/>
-    <xs:element name="is_ppsd" type="yes_no_enum" minOccurs="0"/>
-    <xs:element name="is_us_export" type="yes_no_enum" minOccurs="0"/>
-    """
-    def __init__(self, has_dmc=None, is_fda_regulated_drug=None,
-                 is_fda_regulated_device=None, is_unapproved_device=None,
-                 is_ppsd=None, is_us_export=None):
-        """
-        Careful with the NULL flavour
-        :param has_dmc:
-        :param is_fda_regulated_drug:
-        :param is_fda_regulated_device:
-        :param is_unapproved_device:
-        :param is_ppsd:
-        :param is_us_export:
-        """
-        self.has_dmc = has_dmc == 'Yes' if not has_dmc is None else None
-        self.is_fda_regulated_drug = is_fda_regulated_drug == 'Yes' if not is_fda_regulated_drug is None else None
-        self.is_fda_regulated_device = is_fda_regulated_device == 'Yes' if not is_fda_regulated_device is None else None
-        self.is_unapproved_device = is_unapproved_device == 'Yes' if not is_unapproved_device is None else None
-        self.is_ppsd = is_ppsd == 'Yes' if not is_ppsd is None else None
-        self.is_us_export = is_us_export == 'Yes' if not is_us_export is None else None
-
-
-class Address(CTStruct):
-    """
-    <xs:element name="city" type="xs:string"/>
-    <xs:element name="state" type="xs:string"  minOccurs="0"/>
-    <xs:element name="zip" type="xs:string"  minOccurs="0"/>
-    <xs:element name="country" type="xs:string"/>
-    """
-
-    def __init__(self, city=None, state=None, zip=None, country=None):
-        self.city = city
-        self.state = state
-        self.zip = zip
-        self.country = country
-
-
-class Facility(CTStruct):
-    """
-    <xs:element name="name" type="xs:string" minOccurs="0"/>
-    <xs:element name="address" type="address_struct" minOccurs="0"/>
-    """
-
-    def __init__(self, name=None, address=None):
-        self.name = name
-        self.address = Address.from_dict(address) if address is not None else None
-
-
-class Location(CTStruct):
-    """
-    <xs:element name="facility" type="facility_struct" minOccurs="0"/>
-    <xs:element name="status" type="recruitment_status_enum" minOccurs="0"/>
-    <xs:element name="contact" type="contact_struct" minOccurs="0"/>
-    <xs:element name="contact_backup" type="contact_struct" minOccurs="0"/>
-    <xs:element name="investigator" type="investigator_struct" minOccurs="0" maxOccurs="unbounded"/>
-    """
-
-    def __init__(self, facility=None, status=None, contact=None, contact_backup=None, investigator=None):
-        self.facility = Facility.from_dict(facility) if facility is not None else None
-        self.status = status
-        self.contact = Contact.from_dict(contact) if contact is not None else None
-        self.contact_backup = Contact.from_dict(contact_backup) \
-            if contact_backup is not None else None
-        self.investigators = []
-        if investigator is not None:
-            for _inv in investigator:
-                self.investigators.append(Investigator.from_dict(_inv))
-
-
-class ResponsibleParty(CTStruct):
-
-    def __init__(self, name_title=None, organization=None, responsible_party_type=None,
-                 investigator_affiliation=None, investigator_full_name=None,
-                 investigator_title=None):
-        self.name_title = name_title
-        self.organization = organization
-        self.responsible_party_type = responsible_party_type
-        self.investigator_affiliation = investigator_affiliation
-        self.investigator_full_name = investigator_full_name
-        self.investigator_title = investigator_title
-
-
-class StudyContact(CTStruct):
-
-    def __init__(self, first_name=None, middle_name=None, last_name=None, degrees=None):
-        self.first_name = first_name
-        self.middle_name = middle_name
-        self.last_name = last_name
-        self.degrees = degrees
-
-
-class Contact(StudyContact):
-
-    def __init__(self, first_name=None, middle_name=None, last_name=None, degrees=None,
-                 phone=None, phone_ext=None, email=None):
-        super(Contact, self).__init__(first_name, middle_name, last_name, degrees)
-        self.phone = phone
-        self.phone_ext = phone_ext
-        self.email = email
-
-
-class Investigator(StudyContact):
-
-    def __init__(self, first_name=None,
-                 middle_name=None, last_name=None,
-                 degrees=None, role=None, affiliation=None):
-        super(Investigator, self).__init__(first_name, middle_name, last_name, degrees)
-        self.role = role
-        self.affiliation = affiliation
-
-
-class StudyEligibility(CTStruct):
-    """
-    <xs:element name="study_pop" type="textblock_struct" minOccurs="0"/>
-    <xs:element name="sampling_method" type="sampling_method_enum" minOccurs="0"/>
-    <xs:element name="criteria" type="textblock_struct" minOccurs="0"/>
-    <xs:element name="gender" type="gender_enum"/>
-    <xs:element name="gender_based" type="yes_no_enum" minOccurs="0"/>
-    <xs:element name="gender_description" type="xs:string" minOccurs="0"/>
-    <xs:element name="minimum_age" type="age_pattern"/>
-    <xs:element name="maximum_age" type="age_pattern"/>
-    <xs:element name="healthy_volunteers" type="xs:string" minOccurs="0"/>
-    """
-    def __init__(self, study_pop=None, sampling_method=None, criteria=None,
-                 gender=None, gender_based=None, gender_description=None,
-                 minimum_age=None, maximum_age=None, healthy_volunteers=None):
-        self._study_pop = study_pop
-        self.sampling_method = sampling_method
-        self._criteria = criteria
-        self.gender = gender
-        self._gender_based = gender_based
-        self.gender_description = gender_description
-        self.minimum_age = minimum_age
-        self.maximum_age = maximum_age
-        self.healty_volunteers = healthy_volunteers
-        self._inclusion_criteria = None
-        self._exclusion_criteria = None
-
-    @property
-    def gender_based(self):
-        return self._gender_based == "Yes"
-
-    @property
-    def study_pop(self):
-        return process_textblock(self._study_pop.get('textblock', ''))
-
-    @property
-    def inclusion_criteria(self):
-        if self._inclusion_criteria is None:
-            processed = process_eligibility(self.criteria)
-            self._inclusion_criteria = processed.get('inclusion', [])
-        return self._inclusion_criteria
-
-    @property
-    def exclusion_criteria(self):
-        if self._exclusion_criteria is None:
-            processed = process_eligibility(self.criteria)
-            self._exclusion_criteria = processed.get('exclusion', [])
-        return self._exclusion_criteria
-
-    @property
-    def criteria(self):
-        return self._criteria.get('textblock')
-
-
-class StudyArm(CTStruct):
-
-    def __init__(self, arm_group_label=None, arm_group_type=None, description=None):
-        self.arm_group_label = arm_group_label
-        self.arm_group_type = arm_group_type
-        self.description = description
-
-
-class StudyIntervention(CTStruct):
-    """
-    <xs:element name="intervention_type" type="intervention_type_enum"/>
-    <xs:element name="intervention_name" type="xs:string"/>
-    <xs:element name="description" type="xs:string" minOccurs="0"/>
-    <xs:element name="arm_group_label" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
-    <xs:element name="other_name" type="xs:string" minOccurs="0" maxOccurs="unbounded"/> <!-- synonyms for intervention_name -->
-    """
-    def __init__(self, intervention_type=None, intervention_name=None, description=None, arm_group_label=None, other_name=None):
-        self.intervention_type = intervention_type
-        self.intervention_name = intervention_name
-        self.description = description
-        self.arms = arm_group_label
-        self.aliases = other_name
-
-
-class VariableDateStruct(CTStruct):
-
-    def __init__(self, date_str=None, date_type=None):
-        self.date_type = date_type
-        self.raw_date_str = date_str
-
-    @property
-    def date(self):
-        """
-        "(Unknown|((January|February|March|April|May|June|July|August|September|October|November|December) (([12]?[0-9]|30|31)\, )?[12][0-9]{3}))"
-        :return:
-        """
-        if self.raw_date_str == 'Unknown':
-            return self.raw_date_str
-        else:
-            try:
-                _date = datetime.datetime.strptime(self.raw_date_str, "%B %d, %Y")
-            except ValueError:
-                try:
-                    _date = datetime.datetime.strptime(self.raw_date_str, "%B %Y")
-                except ValueError:
-                    logger.error("Unable to parse date: {}".format(self.raw_date_str))
-                    return None
-            return _date.date()
-
-    def __eq__(self, other):
-        return self.date == other
-
-
-def parse_date(field):
-    if field is None:
-        # not supplied
-        return field
-    else:
-        if isinstance(field, (six.string_types,)):
-            # type variable_date_type
-            return VariableDateStruct(date_str=field)
-        elif isinstance(field, (dict,)):
-            # type variable_date_struct
-            return VariableDateStruct(date_str=field.get('$'),
-                                      date_type=field.get('@type'))
-        else:
-            logger.error("Unexpected value: {} {}".format(field, type(field)))
-
-
-class StudyTrail:
-
-    def __init__(self, study_first_submitted=None, study_first_submitted_qc=None, study_first_posted=None,
-                 last_update_submitted=None, last_update_submitted_qc=None, last_update_posted=None,
-                 results_first_submitted=None, results_first_submitted_qc=None, results_first_posted=None,
-                 disposition_first_submitted=None, disposition_first_submitted_qc=None, disposition_first_posted=None):
-        self.study_first_submitted = parse_date(study_first_submitted)
-        self.study_first_submitted_qc = parse_date(study_first_submitted_qc)
-        self.study_first_posted = parse_date(study_first_posted)
-        self.last_update_submitted = parse_date(last_update_submitted)
-        self.last_update_submitted_qc = parse_date(last_update_submitted_qc)
-        self.last_update_posted = parse_date(last_update_posted)
-        self.results_first_submitted = parse_date(results_first_submitted)
-        self.results_first_submitted_qc = parse_date(results_first_submitted_qc)
-        self.results_first_posted = parse_date(results_first_posted)
-        self.disposition_first_submitted = parse_date(disposition_first_submitted)
-        self.disposition_first_submitted_qc = parse_date(disposition_first_submitted_qc)
-        self.disposition_first_posted = parse_date(disposition_first_posted)
-
-    @property
-    def has_results(self):
-        return self.results_first_submitted is not None
-
-
-class Link(CTStruct):
-
-    def __init__(self, url=None, description=None):
-        self.url = url
-        self.description = description
-
-
-class EnrolmentStruct(CTStruct):
-
-    def __init__(self, count, count_type):
-        self.count = int(count)
-        self.count_type = count_type
-
-    @classmethod
-    def from_dict(cls, message):
-        return cls(count=message.get('$', ''), count_type=message.get('@type', ''))
-
-
-class OutcomeStruct(CTStruct):
-
-    def __init__(self, measure=None, time_frame=None, description=None):
-        self.measure = measure
-        self.time_frame = time_frame
-        self.description = description
-
-
-class StudyOutcomes:
-    def __init__(self):
-        self.primary = []
-        self.secondary = []
-        self.other = []
-
-    def add_outcome(self, outcome_type, outcome_dict):
-        if outcome_type == "primary":
-            self.primary.append(OutcomeStruct.from_dict(outcome_dict))
-        elif outcome_type == "secondary":
-            self.secondary.append(OutcomeStruct.from_dict(outcome_dict))
-        else:
-            self.other.append(OutcomeStruct.from_dict(outcome_dict))
-
-
-class PatientData(CTStruct):
-
-    def __init__(self, sharing_ipd=None, ipd_description=None):
-        self.sharing_ipd = sharing_ipd
-        self.ipd_description = ipd_description
-
-
-class Reference(CTStruct):
-    def __init__(self, citation=None, PMID=None):
-        self.citation = citation
-        self.pubmed_id = PMID
+from clinical_trials.structs import (
+    StudyDesignInfo,
+    OversightInfo,
+    Facility,
+    Location,
+    ResponsibleParty,
+    Contact,
+    Investigator,
+    StudyEligibility,
+    StudyArm,
+    StudyIntervention,
+    parse_date,
+    StudyTrail,
+    ExpandedAccessInfo,
+    Link,
+    EnrolmentStruct,
+    StudyOutcomes,
+    PatientData,
+    Reference,
+    StudyDocument)
 
 
 class ClinicalStudy:
-
-    def __init__(self, data):
+    def __init__(self, data, has_results=False):
+        self.has_results = has_results
         self._data = data
         self._people = None
         self._locations = None
@@ -363,50 +43,108 @@ class ClinicalStudy:
         self._outcomes = None
         self._cities = None
         self._officials = None
+        self._study_documents = None
+        self._primary_outcomes = []
+
+    @property
+    def biospec_retention(self):
+        return glom(self._data, "biospec_retention", default="")
+
+    @property
+    def biospec_description(self):
+        content = glom(self._data, "biospec_descr.textblock", default="")
+        return process_textblock(content)
+
+    @property
+    def number_of_arms(self):
+        return int(glom(self._data, "number_of_arms", default=0))
+
+    @property
+    def number_of_groups(self):
+        return int(glom(self._data, "number_of_groups", default=0))
+
+    @property
+    def target_duration(self):
+        return glom(self._data, "target_duration", default=None)
+
+    @property
+    def study_design(self):
+        if glom(self._data, "study_design_info", default=None):
+            return StudyDesignInfo.from_dict(glom(self._data, "study_design_info"))
+
+    @property
+    def has_study_documents(self):
+        return self.study_documents != []
+
+    @property
+    def study_documents(self):
+        if self._study_documents is None:
+            if glom(self._data, "study_docs", default=None):
+                self._study_documents = [StudyDocument.from_dict(x) for x in glom(self._data, "study_docs.study_doc")]
+            else:
+                # get from the website
+                self._study_documents = self._get_documents()
+        return self._study_documents
+
+    @property
+    def has_expanded_access(self):
+        return yes_no_enum(glom(self._data, "has_expanded_access", default="No"))
+
+    @property
+    def expanded_access_info(self):
+        if glom(self._data, "expanded_access_info", default=None):
+            return ExpandedAccessInfo.from_dict(
+                glom(self._data, "expanded_access_info")
+            )
+
+    @property
+    def acronym(self):
+        return glom(self._data, "acronym", default=None)
 
     @property
     def references(self):
-        if glom(self._data, 'reference', default=None):
-            return [Reference.from_dict(x) for x in glom(self._data, 'reference')]
+        if glom(self._data, "reference", default=None):
+            return [Reference.from_dict(x) for x in glom(self._data, "reference")]
         return []
 
     @property
     def results_references(self):
-        if glom(self._data, 'results_reference', default=None):
-            return [Reference.from_dict(x) for x in glom(self._data, 'results_reference')]
+        if glom(self._data, "results_reference", default=None):
+            return [
+                Reference.from_dict(x) for x in glom(self._data, "results_reference")
+            ]
         return []
 
     @property
     def overall_contact(self):
-        if glom(self._data, 'overall_contact', default=None):
-            return Contact.from_dict(glom(self._data, 'overall_contact'))
+        if glom(self._data, "overall_contact", default=None):
+            return Contact.from_dict(glom(self._data, "overall_contact"))
 
     @property
     def overall_contact_backup(self):
-        if glom(self._data, 'overall_contact_backup', default=None):
-            return Contact.from_dict(glom(self._data, 'overall_contact_backup'))
+        if glom(self._data, "overall_contact_backup", default=None):
+            return Contact.from_dict(glom(self._data, "overall_contact_backup"))
 
     @property
     def patient_data(self):
-        _patient_data = glom(self._data, 'patient_data', default=None)
+        _patient_data = glom(self._data, "patient_data", default=None)
         if _patient_data:
-            return PatientData.from_dict(glom(self._data, 'patient_data'))
+            return PatientData.from_dict(glom(self._data, "patient_data"))
 
     @property
     def removed_countries(self):
-        return glom(self._data, 'removed_countries.country', default=[])
+        return glom(self._data, "removed_countries.country", default=[])
 
     @property
     def verification_date(self):
-        verification_date = glom(self._data, 'verification_date')
-        logger.info("Verification Date: {}".format(verification_date))
+        verification_date = glom(self._data, "verification_date")
         return parse_date(verification_date)
 
     @property
     def outcomes(self):
         """
         Get the study outcomes
-        :rtype: StudyOutcomes
+        :rtype: clinical_trials.structs.StudyOutcomes
         """
         if self._outcomes is None:
             self.add_outcomes()
@@ -414,25 +152,25 @@ class ClinicalStudy:
 
     @property
     def enrollment_info(self):
-        return EnrolmentStruct.from_dict(glom(self._data, 'enrollment'))
+        return EnrolmentStruct.from_dict(glom(self._data, "enrollment"))
 
     @property
     def completion_date(self):
-        return parse_date(glom(self._data, 'completion_date'))
+        return parse_date(glom(self._data, "completion_date"))
 
     @property
     def primary_completion_date(self):
-        return parse_date(glom(self._data, 'primary_completion_date'))
+        return parse_date(glom(self._data, "primary_completion_date"))
 
     @property
     def links(self):
-        return [Link.from_dict(x) for x in glom(self._data, 'link', default=[])]
+        return [Link.from_dict(x) for x in glom(self._data, "link", default=[])]
 
     @property
     def trail(self):
         """
         Get the study trail
-        :rtype: StudyTrail
+        :rtype: clinical_trials.structs.StudyTrail
         """
         if self._trail is None:
             self.add_study_trail()
@@ -440,53 +178,62 @@ class ClinicalStudy:
 
     @property
     def phase(self):
-        return glom(self._data, 'phase', default='N/A')
+        return glom(self._data, "phase", default="N/A")
+
+    @property
+    def why_stopped(self):
+        # TODO: check for overall_status, if stopped and missing then return UNK or similar
+        return glom(self._data, "why_stopped", default="N/A").strip()
 
     @property
     def last_known_status(self):
-        return glom(self._data, 'last_known_status', default='')
+        return glom(self._data, "last_known_status", default="")
 
     @property
     def status(self):
-        return glom(self._data, 'overall_status', default='')
+        return glom(self._data, "overall_status", default="")
 
     @property
     def study_type(self):
-        return glom(self._data, 'study_type', default='')
+        return glom(self._data, "study_type", default="")
 
     @property
     def brief_summary(self):
-        content = glom(self._data, 'brief_summary.textblock', default='')
+        content = glom(self._data, "brief_summary.textblock", default="")
         return process_textblock(content)
 
     @property
     def detailed_description(self):
-        content = glom(self._data, 'detailed_description.textblock', default='')
+        content = glom(self._data, "detailed_description.textblock", default="")
         return process_textblock(content)
 
     @property
     def eligibility(self):
         """
         Get the study Elibility Struct
-        :rtype: StudyEligibility
+        :rtype: clinical_trials.structs.StudyEligibility
         """
         if self._eligibility is None:
-            self._eligibility = StudyEligibility.from_dict(glom(self._data, 'eligibility'))
+            self._eligibility = StudyEligibility.from_dict(
+                glom(self._data, "eligibility")
+            )
         return self._eligibility
 
     @property
     def oversight_info(self):
         """
         Get the oversight information
-        :rtype: OversightInfo
+        :rtype: clinical_trials.structs.OversightInfo
         """
         if self._oversight_info is None:
-            self._oversight_info = OversightInfo.from_dict(glom(self._data, 'oversight_info'))
+            self._oversight_info = OversightInfo.from_dict(
+                glom(self._data, "oversight_info")
+            )
         return self._oversight_info
 
     @property
     def countries(self):
-        return glom(self._data, 'location_countries.country', default=[])
+        return glom(self._data, "location_countries.country", default=[])
 
     @property
     def keywords(self):
@@ -494,7 +241,7 @@ class ClinicalStudy:
         Get the Study Keywords
         :rtype: list(str)
         """
-        return glom(self._data, 'keyword', default=[])
+        return glom(self._data, "keyword", default=[])
 
     @property
     def interventions(self):
@@ -513,24 +260,28 @@ class ClinicalStudy:
         return self._responsible_parties
 
     @property
+    def source(self):
+        return self._data["source"]
+
+    @property
     def sponsor(self):
-        return self._data['sponsors']['lead_sponsor']
+        return self._data["sponsors"]["lead_sponsor"]
 
     @property
     def collaborators(self):
-        return self._data['sponsors'].get('collaborator', [])
+        return self._data["sponsors"].get("collaborator", [])
 
     @property
     def nct_id(self):
-        return glom(self._data, 'id_info.nct_id')
+        return glom(self._data, "id_info.nct_id")
 
     @property
     def study_id(self):
-        return glom(self._data, 'id_info.org_study_id')
+        return glom(self._data, "id_info.org_study_id")
 
     @property
     def secondary_id(self):
-        return glom(self._data, 'id_info.secondary_id', default=[])
+        return glom(self._data, "id_info.secondary_id", default=[])
 
     @property
     def locations(self):
@@ -563,7 +314,7 @@ class ClinicalStudy:
     def overall_officials(self):
         if self._officials is None:
             self._officials = []
-            for official in glom(self._data, 'overall_official', default=[]):
+            for official in glom(self._data, "overall_official", default=[]):
                 self._officials.append(Investigator.from_dict(official))
         return self._officials
 
@@ -573,8 +324,10 @@ class ClinicalStudy:
         :return:
         """
         study_outcomes = StudyOutcomes()
-        for outcome_type in ('primary', 'secondary', 'other'):
-            for protocol_outcome in glom(self._data, '{}_outcome'.format(outcome_type), default=[]):
+        for outcome_type in ("primary", "secondary", "other"):
+            for protocol_outcome in glom(
+                self._data, "{}_outcome".format(outcome_type), default=[]
+            ):
                 study_outcomes.add_outcome(outcome_type, protocol_outcome)
         self._outcomes = study_outcomes
 
@@ -582,20 +335,38 @@ class ClinicalStudy:
         """
         Add the study trail
         """
-        trail = StudyTrail(study_first_submitted=glom(self._data, 'study_first_submitted', default=None),
-                           study_first_submitted_qc=glom(self._data, 'study_first_submitted_qc', default=None),
-                           study_first_posted=glom(self._data, 'study_first_posted', default=None),
-                           last_update_submitted=glom(self._data, 'last_update_submitted', default=None),
-                           last_update_submitted_qc=glom(self._data, 'last_update_submitted_qc', default=None),
-                           last_update_posted=glom(self._data, 'last_update_posted', default=None),
-                           results_first_submitted=glom(self._data, 'results_first_submitted', default=None),
-                           results_first_submitted_qc=glom(self._data, 'results_first_submitted_qc', default=None),
-                           results_first_posted=glom(self._data, 'results_first_posted', default=None),
-                           disposition_first_submitted=glom(self._data,
-                                                                 'disposition_first_submitted', default=None),
-                           disposition_first_submitted_qc=glom(self._data,
-                                                                    'disposition_first_submitted_qc', default=None),
-                           disposition_first_posted=glom(self._data, 'disposition_first_posted', default=None))
+        trail = StudyTrail(
+            study_first_submitted=glom(
+                self._data, "study_first_submitted", default=None
+            ),
+            study_first_submitted_qc=glom(
+                self._data, "study_first_submitted_qc", default=None
+            ),
+            study_first_posted=glom(self._data, "study_first_posted", default=None),
+            last_update_submitted=glom(
+                self._data, "last_update_submitted", default=None
+            ),
+            last_update_submitted_qc=glom(
+                self._data, "last_update_submitted_qc", default=None
+            ),
+            last_update_posted=glom(self._data, "last_update_posted", default=None),
+            results_first_submitted=glom(
+                self._data, "results_first_submitted", default=None
+            ),
+            results_first_submitted_qc=glom(
+                self._data, "results_first_submitted_qc", default=None
+            ),
+            results_first_posted=glom(self._data, "results_first_posted", default=None),
+            disposition_first_submitted=glom(
+                self._data, "disposition_first_submitted", default=None
+            ),
+            disposition_first_submitted_qc=glom(
+                self._data, "disposition_first_submitted_qc", default=None
+            ),
+            disposition_first_posted=glom(
+                self._data, "disposition_first_posted", default=None
+            ),
+        )
         self._trail = trail
 
     def get_arm_by_label(self, arm_label):
@@ -609,13 +380,29 @@ class ClinicalStudy:
                 return arm
         return None
 
+    def _get_documents(self):
+        """
+        Look for Study Documents
+        :return:
+        """
+        documents = []
+        docs = get_study_documents(self.nct_id)
+        for doc_type, link in docs.items():
+            doc_id = "_".join(link.split("/")[2:])
+            document = StudyDocument.from_dict(dict(doc_id=doc_id,
+                                                    doc_type=doc_type,
+                                                    doc_url=link,
+                                                    doc_comment="Retrieved from clinicaltrials.gov manually"))
+            documents.append(document)
+        return documents
+
     def _add_interventions(self):
         """
         Add the interventions
         :return:
         """
         self._interventions = []
-        for inv_spec in glom(self._data, 'intervention', default=[]):
+        for inv_spec in glom(self._data, "intervention", default=[]):
             self._interventions.append(StudyIntervention(**inv_spec))
 
     def _add_arms(self):
@@ -625,7 +412,7 @@ class ClinicalStudy:
         :return:
         """
         self._arms = []
-        for arm_spec in glom(self._data, 'arm_group', default=[]):
+        for arm_spec in glom(self._data, "arm_group", default=[]):
             self._arms.append(StudyArm(**arm_spec))
 
     def _add_responsible_party(self, responsible_party):
@@ -664,7 +451,7 @@ class ClinicalStudy:
         Add the reponsible_parties
         :return:
         """
-        self._add_responsible_party(glom(self._data, 'responsible_party', default={}))
+        self._add_responsible_party(glom(self._data, "responsible_party", default={}))
 
     def add_locations(self):
         """
@@ -672,7 +459,7 @@ class ClinicalStudy:
         clinical_study.location
         :return:
         """
-        for location in glom(self._data, 'location', default=[]):
+        for location in glom(self._data, "location", default=[]):
             self._add_location(location)
 
     @property
@@ -702,7 +489,10 @@ class ClinicalStudy:
                             self._people.append(investigator)
                 if location.contact and location.contact not in self.study_people:
                     self._people.append(location.contact)
-                if location.contact_backup and location.contact_backup not in self.study_people:
+                if (
+                    location.contact_backup
+                    and location.contact_backup not in self.study_people
+                ):
                     self._people.append(location.contact_backup)
         return self._people
 
@@ -713,8 +503,10 @@ class ClinicalStudy:
         :return:
         """
         terms = {}
-        for stat in ('condition', 'intervention'):
-            for term in glom(self._data, '{}_browse.mesh_term'.format(stat), default=[]):
+        for stat in ("condition", "intervention"):
+            for term in glom(
+                self._data, "{}_browse.mesh_term".format(stat), default=[]
+            ):
                 terms.setdefault(stat, []).append(term)
         return terms
 
@@ -723,7 +515,7 @@ class ClinicalStudy:
         Return the assigned Conditions
         :return:
         """
-        return glom(self._data, 'condition', default=[])
+        return glom(self._data, "condition", default=[])
 
     @classmethod
     def from_nctid(cls, nct_id):
@@ -735,7 +527,8 @@ class ClinicalStudy:
         """
         schema = get_schema()
         content = get_study(nct_id)
-        return cls(schema.to_dict(content))
+        has_results = b"Results are available for this study" in content
+        return cls(schema.to_dict(content.decode("utf-8")), has_results)
 
     @classmethod
     def from_file(cls, filename, local_schema=False):
@@ -744,8 +537,9 @@ class ClinicalStudy:
                 schema = get_local_schema()
             else:
                 schema = get_schema()
-            with open(filename, 'rb') as fh:
+            with open(filename, "rb") as fh:
                 content = fh.read()
-            return cls(schema.to_dict(content))
+            has_results = b"Results are available for this study" in content
+            return cls(schema.to_dict(content.decode("utf-8")), has_results)
         else:
             raise ValueError("File {} not found".format(filename))
