@@ -1,5 +1,7 @@
 import datetime
+import os
 
+import requests
 from six import string_types
 
 from clinical_trials import logger
@@ -526,3 +528,38 @@ class Reference(CTStruct):
     def __init__(self, citation=None, PMID=None):
         self.citation = citation
         self.pubmed_id = PMID
+
+
+def convert_has(content):
+    if content is not None:
+        return content == "Yes"
+    return False
+
+
+class ProvidedDocument(CTStruct):
+    def __init__(self,
+                 document_type=None,
+                 document_has_protocol=None,
+                 document_has_icf=None,
+                 document_has_sap=None,
+                 document_date=None,
+                 document_url=None):
+        self.type = document_type
+        self.has_protocol = convert_has(document_has_protocol)
+        self.has_icf = convert_has(document_has_icf)
+        self.has_sap = convert_has(document_has_sap)
+        self.date = document_date
+        self.url = document_url.strip()
+
+    def fetch_document(self, location):
+        """
+        Fetch the document and write out the document
+        :param str location: Where to put the file
+        """
+        if self.url is None:
+            raise ValueError("No URL supplied")
+        r = requests.get(self.url, allow_redirects=True)
+        if r.status_code == 404:
+            raise ValueError("Unable to find referenced document: {}".format(self.url))
+        with open(os.path.join(location, self.url.split('/')[-1]), 'wb') as fh:
+            fh.write(r.content)
