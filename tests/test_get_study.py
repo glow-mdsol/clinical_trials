@@ -1,6 +1,6 @@
 import os
 import unittest
-from mock import mock
+import mock
 
 from clinical_trials.connector import get_study
 

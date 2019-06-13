@@ -1,8 +1,8 @@
 import logging
 
-SCHEMA_VERSION = "08/22/2018"
+SCHEMA_VERSION = "2019.02.14"
 
-__version__ = "0.2"
+__version__ = "0.3"
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)

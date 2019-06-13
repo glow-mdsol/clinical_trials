@@ -24,7 +24,7 @@ from clinical_trials.structs import (
     StudyOutcomes,
     PatientData,
     Reference,
-    StudyDocument)
+    StudyDocument, ProvidedDocument)
 
 
 class ClinicalStudy:
@@ -45,6 +45,15 @@ class ClinicalStudy:
         self._officials = None
         self._study_documents = None
         self._primary_outcomes = []
+        self._facilities = []
+        self._provided_docs = None
+
+    @property
+    def provided_docs(self):
+        if "provided_document_section" in self._data:
+            self._provided_docs = [ProvidedDocument.from_dict(x) for x in
+                                   glom(self._data, "provided_document_section.provided_document")]
+        return self._provided_docs or []
 
     @property
     def biospec_retention(self):
@@ -300,7 +309,7 @@ class ClinicalStudy:
             for facility in self.facilities:
                 if facility.address:
                     if facility.address.city:
-                        if not facility.address.city in self._cities:
+                        if facility.address.city not in self._cities:
                             self._cities.append(facility.address.city)
         return self._cities
 
@@ -326,7 +335,7 @@ class ClinicalStudy:
         study_outcomes = StudyOutcomes()
         for outcome_type in ("primary", "secondary", "other"):
             for protocol_outcome in glom(
-                self._data, "{}_outcome".format(outcome_type), default=[]
+                    self._data, "{}_outcome".format(outcome_type), default=[]
             ):
                 study_outcomes.add_outcome(outcome_type, protocol_outcome)
         self._outcomes = study_outcomes
@@ -432,7 +441,7 @@ class ClinicalStudy:
         :return:
         """
         facility = Facility(**facility_data)
-        if not facility in self._facilities:
+        if facility not in self._facilities:
             self._facilities.append(facility)
         return facility
 
@@ -490,8 +499,8 @@ class ClinicalStudy:
                 if location.contact and location.contact not in self.study_people:
                     self._people.append(location.contact)
                 if (
-                    location.contact_backup
-                    and location.contact_backup not in self.study_people
+                        location.contact_backup
+                        and location.contact_backup not in self.study_people
                 ):
                     self._people.append(location.contact_backup)
         return self._people
@@ -505,7 +514,7 @@ class ClinicalStudy:
         terms = {}
         for stat in ("condition", "intervention"):
             for term in glom(
-                self._data, "{}_browse.mesh_term".format(stat), default=[]
+                    self._data, "{}_browse.mesh_term".format(stat), default=[]
             ):
                 terms.setdefault(stat, []).append(term)
         return terms

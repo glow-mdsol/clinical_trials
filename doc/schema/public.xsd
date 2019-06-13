@@ -5,7 +5,7 @@
   XML Schema for ClinicalTrials.gov public XML
   http://clinicaltrials.gov/ct2/html/images/info/public.xsd
   National Library of Medicine, National Institutes of Health
-  Version: 2018.08.22
+  Version: 2019.02.14
 
   Change History for schema:
   12/13/2011 Initial Version
@@ -206,6 +206,26 @@
 
   08/22/2018 Added four additional patient data fields, <ipd_info_type>, <ipd_time_frame>,
              <ipd_access_criteria>, and <ipd_url>, to the <patient_data> tag
+
+  02/06/2019 Removed last comments about date change (see changes for 08/30/2017 and 05/03/2018)
+
+  02/06/2019 Added provided document section.
+             Data providers can submit documents including the Study Protocol, Informed Consent Forn (ICF),
+             and Statistical Analysis Plan (SAP), possibly all in the same pdf document.  These documents
+             are archived, made available through the ClinicalTrials.gov site, and are now described in
+             the Public XML.
+
+             The new section looks like this.  There can be multiple docments.
+               <provided_document_section>
+                 <provided_document>
+                   <document_type>Study Protocol</document_type>
+                   <document_has_protocol>Yes</document_has_protocol>
+                   <document_has_icf>No</document_has_icf>
+                   <document_has_sap>No</document_has_sap>
+                   <document_date>March 27, 2018</document_date>
+                   <document_url>https://ClinicalTrials.gov/ProvidedDocs/35/NCT03737435/Prot_000.pdf
+                 </document_url>
+               </provided_document>
 
  ============================================================================================ -->
 
@@ -620,6 +640,25 @@
     </xs:sequence>
   </xs:complexType>
 
+<!-- === Provided Document Section Struct ============================ -->
+
+  <xs:complexType name="provided_document_struct">
+    <xs:sequence>
+      <xs:element name="document_type" type="xs:string" minOccurs="0"/>
+      <xs:element name="document_has_protocol" type="xs:string" minOccurs="0"/>
+      <xs:element name="document_has_icf" type="xs:string" minOccurs="0"/>
+      <xs:element name="document_has_sap" type="xs:string" minOccurs="0"/>
+      <xs:element name="document_date" type="xs:string" minOccurs="0"/>
+      <xs:element name="document_url" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="provided_document_section_struct">
+    <xs:sequence>
+      <xs:element name="provided_document" type="provided_document_struct" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
 <!-- === Pending Results ============================================= -->
 
   <xs:complexType name="pending_results_struct">
@@ -646,7 +685,7 @@
     <xs:simpleContent>
       <xs:extension base="xs:string">
         <xs:attribute name="group_id" type="xs:string" use="required"/>
-        <xs:attribute name="count" type="xs:integer"/>
+        <xs:attribute name="count" type="xs:string"/>
       </xs:extension>
     </xs:simpleContent>
   </xs:complexType>
@@ -757,7 +796,7 @@
   <xs:complexType name="measure_category_struct">
     <xs:sequence>
       <xs:element name="title" type="xs:string" minOccurs="0"/>
-      <xs:element name="measurement_list">
+      <xs:element name="measurement_list" minOccurs="0">
         <xs:complexType>
           <xs:sequence>
             <xs:element name="measurement" type="measurement_struct" maxOccurs="unbounded"/>
@@ -779,7 +818,7 @@
           </xs:sequence>
         </xs:complexType>
       </xs:element>
-      <xs:element name="category_list">
+      <xs:element name="category_list" minOccurs="0">
         <xs:complexType>
           <xs:sequence>
             <xs:element name="category" type="measure_category_struct" maxOccurs="unbounded"/>
@@ -1286,6 +1325,7 @@
         <xs:element name="intervention_browse" type="browse_struct" minOccurs="0"/>
         <xs:element name="patient_data" type="patient_data_struct" minOccurs="0"/>
         <xs:element name="study_docs" type="study_docs_struct" minOccurs="0"/>
+        <xs:element name="provided_document_section" type="provided_document_section_struct" minOccurs="0"/>
         <xs:element name="pending_results" type="pending_results_struct" minOccurs="0"/>
         <xs:element name="clinical_results" type="clinical_results_struct" minOccurs="0"/>
       </xs:sequence>

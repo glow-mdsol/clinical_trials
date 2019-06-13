@@ -3,10 +3,9 @@ import glob
 import unittest
 import os
 
-from mock import mock
+import mock
 from xmlschema import XMLSchema
 from clinical_trials.clinical_study import ClinicalStudy
-from clinical_trials.structs import StudyArm
 
 SCHEMA_LOCATION = os.path.join(os.path.dirname(__file__), '..', 'doc', 'schema', 'public.xsd')
 

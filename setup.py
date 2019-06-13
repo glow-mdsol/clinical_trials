@@ -25,6 +25,7 @@ setup(
     version=find_version("clinical_trials", "__init__.py"),
     packages=["clinical_trials", "tests"],
     install_requires=["requests", "glom", "xmlschema"],
+    tests_require=["pytest", "mock", "pytest-runner", "tox", "requests-mock", "pytest-xdist", "pytest-cov"],
     url="https://github.com/glow-mdsol/clinical_trials",
     license="MIT",
     author="glow-mdsol",

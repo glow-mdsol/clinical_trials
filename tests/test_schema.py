@@ -1,6 +1,6 @@
 import unittest
 
-from mock import mock
+import mock
 
 from clinical_trials.schema import get_local_schema
 
