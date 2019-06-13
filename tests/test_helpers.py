@@ -1,6 +1,6 @@
 import unittest
 
-from mock import mock
+import mock
 
 from clinical_trials.clinical_study import ClinicalStudy
 from clinical_trials.helpers import process_eligibility, yes_no_enum
