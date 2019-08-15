@@ -527,20 +527,31 @@ class ClinicalStudy:
         return glom(self._data, "condition", default=[])
 
     @classmethod
-    def from_nctid(cls, nct_id):
+    def from_nctid(cls, nct_id, local_schema=False):
         """
-        Create a Study Using the NCT ID
-        :param str nct_id: the NCT ID
+        Build a ClinicalStudy representation from a NCT ID (the API will pull the content)
+        :param str nct_id: The NCT identifier
+        :param bool local_schema: Use the local copy of the public.xsd document
         :rtype: ClinicalStudy
-        :return:
+        :return: The parsed Clinical Study representation
         """
-        schema = get_schema()
+        if local_schema:
+            schema = get_local_schema()
+        else:
+            schema = get_schema()
         content = get_study(nct_id)
         has_results = b"Results are available for this study" in content
         return cls(schema.to_dict(content.decode("utf-8")), has_results)
 
     @classmethod
     def from_file(cls, filename, local_schema=False):
+        """
+        Build a ClinicalStudy representation from a file
+        :param str filename: Path to the XML from clinicaltrials.gov
+        :param bool local_schema: Use the local copy of the public.xsd document
+        :rtype: ClinicalStudy
+        :return: The parsed Clinical Study representation
+        """
         if os.path.exists(filename):
             if local_schema:
                 schema = get_local_schema()
@@ -552,3 +563,19 @@ class ClinicalStudy:
             return cls(schema.to_dict(content.decode("utf-8")), has_results)
         else:
             raise ValueError("File {} not found".format(filename))
+
+    @classmethod
+    def from_content(cls, content, local_schema=False):
+        """
+        Build a ClinicalStudy representation from a block of content
+        :param str content: Byte encoded Content containing XML from clinicaltrials.gov
+        :param bool local_schema: Use the local copy of the public.xsd document
+        :rtype: ClinicalStudy
+        :return: The parsed Clinical Study representation
+        """
+        if local_schema:
+            schema = get_local_schema()
+        else:
+            schema = get_schema()
+        has_results = b"Results are available for this study" in content
+        return cls(schema.to_dict(content.decode("utf-8")), has_results)

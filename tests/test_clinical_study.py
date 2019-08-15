@@ -746,3 +746,13 @@ class TestFromFile(SchemaTestCase):
         with self.assertRaises(ValueError) as exc:
             study = ClinicalStudy.from_file("Some/missing/path")
         self.assertEqual("File Some/missing/path not found", str(exc.exception))
+
+
+class TestFromContent(SchemaTestCase):
+
+    def test_from_string_content(self):
+        with open(os.path.join(os.path.dirname(__file__), 'fixtures', 'NCT00985114.xml'), 'rb') as fh:
+            content = fh.read()
+        study = ClinicalStudy.from_content(content)
+        self.assertEqual('NCT00985114', study.nct_id)
+
